@@ -45,7 +45,7 @@ uv run streamlit run app/app.py    # jalanin app (mulai Fase 2)
 ## Roadmap
 
 - [x] **Fase 0** — Setup projek (uv, struktur, git, ruff+pytest)
-- [ ] **Fase 1** — Core domain + test (TDD)
+- [x] **Fase 1** — Core domain + test (TDD)
 - [ ] **Fase 2** — Streamlit UI
 - [ ] **Fase 3** — Deploy (Streamlit Cloud + Postgres)
 - [ ] **Fase 4** — Analisa (EDA)
@@ -56,3 +56,7 @@ Catatan hal baru yang dipelajari tiap fase:
 
 - **Fase 0** — `uv` buat manage project & deps; *src-layout*; kenapa core dipisah dari UI;
   git + `.gitignore`; config `ruff` & `pytest` di `pyproject.toml`.
+- **Fase 1** — **TDD** (RED→GREEN→REFACTOR); pola *ledger* (stok dihitung dari transaksi,
+  bukan disimpan); pisah `repository` (data) vs `service` (aturan bisnis); pytest *fixtures*
+  (`conftest.py`) buat hapus duplikasi; custom *exceptions*; `enum.StrEnum`; round-trip
+  persistence test; feature branch + merge. 15 test hijau.
