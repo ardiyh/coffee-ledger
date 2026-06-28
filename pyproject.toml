@@ -1,0 +1,37 @@
+[project]
+name = "coffee-ledger"
+version = "0.1.0"
+description = "Coffee bean inventory ledger — track roasted bean flow (in/out) in grams"
+readme = "README.md"
+authors = [
+    { name = "ardiyh", email = "ardi.y.h@mail.ugm.ac.id" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "sqlmodel>=0.0.39",
+]
+
+[project.scripts]
+coffee-ledger = "coffee_ledger:main"
+
+[build-system]
+requires = ["uv_build>=0.11.25,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/W: pycodestyle · F: pyflakes · I: import sorting · UP: pyupgrade · B: bugbear
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
