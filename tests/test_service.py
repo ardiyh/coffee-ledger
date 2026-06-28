@@ -35,3 +35,11 @@ def test_stock_is_net_of_all_transactions(service, lot):
     service.record_gift(lot.id, grams=30)
 
     assert service.current_stock(lot.id) == 302
+
+
+def test_note_is_saved_on_transaction(service, lot):
+    service.record_acquire(lot.id, grams=100, note="beli dari roastery")
+    service.record_brew(lot.id, grams=18, note="V60")
+
+    notes = [t.note for t in service.history(lot.id)]
+    assert notes == ["beli dari roastery", "V60"]

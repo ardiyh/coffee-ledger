@@ -1,0 +1,12 @@
+# Tema app — dark warm-minimalist (palet kopi).
+# Ganti primaryColor buat ganti aksen. base="dark" bikin sisanya gelap.
+[theme]
+base = "dark"
+primaryColor = "#C8965A"              # amber/caramel — aksen tunggal
+backgroundColor = "#13110F"           # near-black hangat
+secondaryBackgroundColor = "#1C1916"  # panel/kartu
+textColor = "#E9E3DB"                 # off-white hangat
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"               # sembunyiin toolbar bawaan
