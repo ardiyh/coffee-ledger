@@ -4,22 +4,35 @@ Gak ada aturan bisnis di sini: semua lewat `service`. UI cuma nampilin & ngumpul
 Jalanin: `uv run streamlit run app/app.py`
 """
 
+import sys
 from datetime import date
+from pathlib import Path
 
 import altair as alt
 import pandas as pd
 import streamlit as st
 
-from coffee_ledger.errors import LedgerError
-from coffee_ledger.models import TxnKind
-from coffee_ledger.repository import LedgerRepository, init_db, make_engine
-from coffee_ledger.service import LedgerService
+# Streamlit Cloud gak nginstall package di src/ kita, jadi tambahin ke path biar keimport.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+from coffee_ledger.errors import LedgerError  # noqa: E402
+from coffee_ledger.models import TxnKind  # noqa: E402
+from coffee_ledger.repository import LedgerRepository, init_db, make_engine  # noqa: E402
+from coffee_ledger.service import LedgerService  # noqa: E402
+
+
+def _db_url() -> str | None:
+    """DATABASE_URL dari Streamlit secrets (cloud) → env → None (lokal: default SQLite)."""
+    try:
+        return st.secrets["DATABASE_URL"]
+    except Exception:
+        return None
 
 
 @st.cache_resource
 def get_service() -> LedgerService:
     """Bikin service sekali, dipakai ulang antar-rerun."""
-    engine = make_engine()  # DATABASE_URL kalau ada, default SQLite file
+    engine = make_engine(_db_url())
     init_db(engine)
     return LedgerService(LedgerRepository(engine))
 

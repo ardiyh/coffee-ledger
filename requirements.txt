@@ -1,0 +1,6 @@
+# Dependency buat Streamlit Community Cloud (pip).
+# Dev lokal tetap pakai `uv` + pyproject.toml; file ini khusus deploy.
+streamlit>=1.58.0
+sqlmodel>=0.0.39
+pandas>=3.0.3
+psycopg2-binary>=2.9.9
