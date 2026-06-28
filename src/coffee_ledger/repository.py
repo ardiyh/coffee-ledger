@@ -30,6 +30,12 @@ def make_engine(url: str | None = None):
             # pastikan folder buat file .db ada
             db_path = url.split("sqlite:///", 1)[-1]
             Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+    else:
+        # Server DB (Postgres/Neon): Neon nutup koneksi idle & auto-suspend, jadi koneksi di
+        # pool bisa mati → OperationalError pas pertama buka. pre_ping ngecek + reconnect
+        # otomatis; recycle buang koneksi >5 menit sebelum di-drop server.
+        kwargs["pool_pre_ping"] = True
+        kwargs["pool_recycle"] = 300
     return create_engine(url, connect_args=connect_args, **kwargs)
 
 

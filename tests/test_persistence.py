@@ -20,3 +20,10 @@ def test_data_persists_across_reconnect(tmp_path):
     lots = svc2.list_lots()
     assert len(lots) == 1
     assert svc2.current_stock(lots[0].id) == 250
+
+
+def test_postgres_engine_enables_pre_ping():
+    # create_engine lazy (gak konek ke DB) → aman dites tanpa Postgres beneran.
+    engine = make_engine("postgresql+psycopg2://u:p@localhost:5432/db")
+
+    assert engine.pool._pre_ping is True
