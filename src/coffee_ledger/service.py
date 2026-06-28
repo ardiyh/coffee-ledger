@@ -39,21 +39,34 @@ class LedgerService:
     def list_lots(self) -> list[Lot]:
         return self.repo.list_lots()
 
-    def record_acquire(self, lot_id: int, grams: float) -> Transaction:
-        return self._record(lot_id, grams, TxnKind.IN, TxnReason.ACQUIRE)
+    def record_acquire(
+        self, lot_id: int, grams: float, note: str | None = None
+    ) -> Transaction:
+        return self._record(lot_id, grams, TxnKind.IN, TxnReason.ACQUIRE, note)
 
-    def record_brew(self, lot_id: int, grams: float) -> Transaction:
-        return self._record(lot_id, grams, TxnKind.OUT, TxnReason.BREW)
+    def record_brew(
+        self, lot_id: int, grams: float, note: str | None = None
+    ) -> Transaction:
+        return self._record(lot_id, grams, TxnKind.OUT, TxnReason.BREW, note)
 
-    def record_gift(self, lot_id: int, grams: float) -> Transaction:
-        return self._record(lot_id, grams, TxnKind.OUT, TxnReason.GIFT)
+    def record_gift(
+        self, lot_id: int, grams: float, note: str | None = None
+    ) -> Transaction:
+        return self._record(lot_id, grams, TxnKind.OUT, TxnReason.GIFT, note)
 
-    def record_adjust(self, lot_id: int, grams: float, kind: TxnKind) -> Transaction:
+    def record_adjust(
+        self, lot_id: int, grams: float, kind: TxnKind, note: str | None = None
+    ) -> Transaction:
         """Koreksi stok manual (mis. tumpah → OUT, kalibrasi naik → IN)."""
-        return self._record(lot_id, grams, kind, TxnReason.ADJUST)
+        return self._record(lot_id, grams, kind, TxnReason.ADJUST, note)
 
     def _record(
-        self, lot_id: int, grams: float, kind: TxnKind, reason: TxnReason
+        self,
+        lot_id: int,
+        grams: float,
+        kind: TxnKind,
+        reason: TxnReason,
+        note: str | None = None,
     ) -> Transaction:
         if grams <= 0:
             raise InvalidQuantityError(f"grams harus > 0, dapat {grams}")
@@ -65,7 +78,9 @@ class LedgerService:
                 raise InsufficientStockError(
                     f"Stok lot {lot_id} cuma {stock}g, gak bisa keluarin {grams}g"
                 )
-        txn = Transaction(lot_id=lot_id, kind=kind, reason=reason, grams=grams)
+        txn = Transaction(
+            lot_id=lot_id, kind=kind, reason=reason, grams=grams, note=note
+        )
         return self.repo.add_transaction(txn)
 
     def current_stock(self, lot_id: int) -> float:

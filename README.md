@@ -46,7 +46,7 @@ uv run streamlit run app/app.py    # jalanin app (mulai Fase 2)
 
 - [x] **Fase 0** — Setup projek (uv, struktur, git, ruff+pytest)
 - [x] **Fase 1** — Core domain + test (TDD)
-- [ ] **Fase 2** — Streamlit UI
+- [x] **Fase 2** — Streamlit UI
 - [ ] **Fase 3** — Deploy (Streamlit Cloud + Postgres)
 - [ ] **Fase 4** — Analisa (EDA)
 
@@ -60,3 +60,7 @@ Catatan hal baru yang dipelajari tiap fase:
   bukan disimpan); pisah `repository` (data) vs `service` (aturan bisnis); pytest *fixtures*
   (`conftest.py`) buat hapus duplikasi; custom *exceptions*; `enum.StrEnum`; round-trip
   persistence test; feature branch + merge. 15 test hijau.
+- **Fase 2** — Streamlit UI sebagai *lapisan tipis* di atas service; `st.cache_resource`
+  (service dibikin sekali); `st.tabs`/form; `LedgerError` → pesan UI; **AppTest** (uji UI
+  headless); tema dark via `.streamlit/config.toml` + chart Altair; `note` ditambah ke core
+  lewat TDD (bikin UI nyingkap kebutuhan core). 17 test hijau.
