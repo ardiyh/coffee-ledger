@@ -5,8 +5,11 @@ validasi) ada di service.py.
 """
 
 import os
+import time
 from pathlib import Path
 
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -42,6 +45,19 @@ def make_engine(url: str | None = None):
 def init_db(engine) -> None:
     """Bikin semua tabel dari model SQLModel (kalau belum ada)."""
     SQLModel.metadata.create_all(engine)
+
+
+def wait_for_db(engine, attempts: int = 6, delay: float = 2.0) -> None:
+    """Ping DB berulang sampai konek — ride-out cold-start Neon (auto-suspend)."""
+    for i in range(attempts):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return
+        except OperationalError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay)
 
 
 class LedgerRepository:

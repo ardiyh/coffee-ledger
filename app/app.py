@@ -17,7 +17,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from coffee_ledger.errors import LedgerError  # noqa: E402
 from coffee_ledger.models import TxnKind  # noqa: E402
-from coffee_ledger.repository import LedgerRepository, init_db, make_engine  # noqa: E402
+from coffee_ledger.repository import (  # noqa: E402
+    LedgerRepository,
+    init_db,
+    make_engine,
+    wait_for_db,
+)
 from coffee_ledger.service import LedgerService  # noqa: E402
 
 
@@ -33,6 +38,7 @@ def _db_url() -> str | None:
 def get_service() -> LedgerService:
     """Bikin service sekali, dipakai ulang antar-rerun."""
     engine = make_engine(_db_url())
+    wait_for_db(engine)  # ride out cold-start Neon (auto-suspend) sebelum query pertama
     init_db(engine)
     return LedgerService(LedgerRepository(engine))
 

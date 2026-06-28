@@ -27,3 +27,9 @@ def test_postgres_engine_enables_pre_ping():
     engine = make_engine("postgresql+psycopg2://u:p@localhost:5432/db")
 
     assert engine.pool._pre_ping is True
+
+
+def test_wait_for_db_returns_on_working_engine():
+    from coffee_ledger.repository import wait_for_db
+
+    wait_for_db(make_engine("sqlite://"))  # engine sehat → langsung balik, gak raise
