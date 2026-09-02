@@ -17,11 +17,22 @@ diseduh sendiri atau dikasih orang. Sekaligus projek belajar *software engineeri
 ## Arsitektur
 
 ```
-UI (Streamlit)  →  coffee_ledger/ (core, tested)  →  SQLite / Postgres
-                                                   →  notebooks/ (pandas EDA)
+UI (Next.js di Vercel)  →  web/lib/ledger/ (core TypeScript, tested)  →  Neon Postgres
+                                                                       ↑
+                                     src/coffee_ledger/ (jalur baca Python buat EDA)
 ```
 
 Logika inti (`src/coffee_ledger/`) dipisah & dites; UI cuma lapisan tipis di atasnya.
+
+## Kepemilikan schema
+
+Sejak Streamlit pensiun, **Drizzle yang memiliki schema**. Perubahan kolom lewat
+`drizzle-kit generate` + `drizzle-kit migrate` dari dalam `web/`.
+
+`src/coffee_ledger/` dipertahankan sebagai jalur baca Python untuk analisa (pandas,
+notebook). Model SQLModel-nya bisa tertinggal dari schema kalau Drizzle menambah kolom;
+untuk membaca kolom lama itu tidak masalah, dan itu satu-satunya yang dibutuhkan EDA.
+Jangan menjalankan `SQLModel.metadata.create_all()` terhadap database produksi lagi.
 
 ## Struktur
 
@@ -47,8 +58,9 @@ uv run streamlit run app/app.py    # jalanin app (mulai Fase 2)
 - [x] **Fase 0** — Setup projek (uv, struktur, git, ruff+pytest)
 - [x] **Fase 1** — Core domain + test (TDD)
 - [x] **Fase 2** — Streamlit UI
-- [ ] **Fase 3** — Deploy (Streamlit Cloud + Postgres)
-- [ ] **Fase 4** — Analisa (EDA)
+- [x] **Fase 3** — Deploy (Streamlit Cloud + Postgres)
+- [x] **Fase 4** — Pindah ke Next.js + Vercel; Streamlit pensiun
+- [ ] **Fase 5** — Analisa (EDA)
 
 ## Learning log
 
