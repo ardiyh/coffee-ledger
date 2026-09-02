@@ -1,6 +1,6 @@
 # Rencana A — Pensiun Streamlit, Font Geist, Siklus Hidup Lot
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Streamlit pensiun, font display keluar dari kluster default LLM, dan mengisi lot baru turun dari dua langkah jadi satu.
 
@@ -42,7 +42,7 @@ Rencana ini **hanya bagian A**. Isi dashboard (§6), keadaan kosong (§7), dan p
 
 Fraunces ditandai `taste-skill` sebagai satu dari dua serif default favorit LLM. Ia pilihan asisten, bukan pilihan pemilik projek, jadi tidak ada pembelaan brand untuknya. Palet **tidak** ikut berubah. Tiga keluarga font jadi dua.
 
-- [ ] **Step 1: Ganti isi `web/app/layout.tsx` seluruhnya**
+- [x] **Step 1: Ganti isi `web/app/layout.tsx` seluruhnya**
 
 ```tsx
 import type { Metadata } from "next";
@@ -79,7 +79,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 }
 ```
 
-- [ ] **Step 2: Perbarui token font di `web/app/globals.css`**
+- [x] **Step 2: Perbarui token font di `web/app/globals.css`**
 
 Cari tiga baris ini (sekitar baris 42-44) dan ganti:
 
@@ -99,17 +99,17 @@ menjadi:
 
 Nama utility `font-display`, `font-body`, `font-mono` **tidak berubah**, jadi tidak ada komponen yang perlu disentuh. Display dan body kini keluarga yang sama; perbedaannya dibawa berat huruf, bukan keluarga.
 
-- [ ] **Step 3: Pastikan tak ada sisa nama font lama**
+- [x] **Step 3: Pastikan tak ada sisa nama font lama**
 
 Run: `cd web && grep -rn "fraunces\|karla\|plex" app lib --include=*.tsx --include=*.ts --include=*.css -i`
 Expected: tidak ada hasil. Kalau ada, ganti sisanya.
 
-- [ ] **Step 4: Build & test**
+- [x] **Step 4: Build & test**
 
 Run: `cd web && npx next build && npx vitest run`
 Expected: build sukses, `14 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/app/layout.tsx web/app/globals.css
@@ -137,31 +137,31 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 `src/coffee_ledger/` **tetap ada** sebagai jalur baca Python untuk EDA Fase 5. Yang dihapus hanya UI Streamlit dan berkas khusus deploy-nya. `tests/test_app.py` ikut karena ia menguji `app/app.py` lewat AppTest dan akan gagal tanpa file itu.
 
-- [ ] **Step 1: Catat jumlah test Python sebelum menghapus**
+- [x] **Step 1: Catat jumlah test Python sebelum menghapus**
 
 Run: `uv run pytest 2>&1 | tail -1`
 Expected: `23 passed`. Catat angkanya.
 
-- [ ] **Step 2: Hapus berkas Streamlit**
+- [x] **Step 2: Hapus berkas Streamlit**
 
 ```bash
 git rm app/app.py requirements.txt .streamlit/config.toml .streamlit/secrets.toml.example tests/test_app.py
 rmdir app .streamlit 2>/dev/null || true
 ```
 
-- [ ] **Step 3: Jalankan test Python**
+- [x] **Step 3: Jalankan test Python**
 
 Run: `uv run pytest 2>&1 | tail -1`
 Expected: `22 passed` (23 dikurangi satu test AppTest). Kalau angkanya lain, laporkan; jangan sesuaikan test agar hijau.
 
-- [ ] **Step 4: Perbarui README.md**
+- [x] **Step 4: Perbarui README.md**
 
 Di bagian Roadmap, ganti baris Fase 3 dan 4 sehingga terbaca:
 
 ```markdown
 - [x] **Fase 3** — Deploy (Streamlit Cloud + Postgres)
 - [x] **Fase 4** — Pindah ke Next.js + Vercel; Streamlit pensiun
-- [ ] **Fase 5** — Analisa (EDA)
+- [x] **Fase 5** — Analisa (EDA)
 ```
 
 Di bagian Arsitektur, ganti blok diagram menjadi:
@@ -186,7 +186,7 @@ untuk membaca kolom lama itu tidak masalah, dan itu satu-satunya yang dibutuhkan
 Jangan menjalankan `SQLModel.metadata.create_all()` terhadap database produksi lagi.
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -203,7 +203,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 ```
 
-- [ ] **Step 6: Matikan deploy Streamlit Cloud**
+- [x] **Step 6: Matikan deploy Streamlit Cloud**
 
 Ini langkah manual pemilik projek, bukan agent: di share.streamlit.io, hapus app-nya. Catat di laporan bahwa langkah ini menunggu pemilik projek.
 
@@ -217,7 +217,7 @@ Ini langkah manual pemilik projek, bukan agent: di share.streamlit.io, hapus app
 
 Menghabiskan lot berarti **mencatat koreksi keluar sebesar sisa stok**, bukan menghapus apa pun. Stok dihitung dari transaksi, jadi menghapus transaksi berarti mengarang ulang sejarah.
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 Tambahkan ke `web/lib/ledger/ledger.test.ts`, mengikuti pola `describe`/fixture yang sudah ada di file itu (pakai `freshDb()` dan helper lot yang sama seperti test lain):
 
@@ -261,12 +261,12 @@ describe("finishLot", () => {
 
 Kalau nama helper di file itu berbeda dari `freshDb`/`sampleLot`, pakai nama yang sebenarnya ada di sana. Jangan bikin helper baru.
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `finishLot is not defined` (atau error impor serupa). Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Tambahkan ke `web/lib/ledger/service.ts`, setelah `recordAdjust`:
 
@@ -288,12 +288,12 @@ export async function finishLot(
 }
 ```
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `17 passed` (14 lama + 3 baru).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/ledger.test.ts
@@ -318,7 +318,7 @@ Sekarang mengisi lot baru butuh dua langkah di dua halaman. Ini menggabungkannya
 
 **Tanpa rollback, dan itu disengaja:** kalau pencatatan ACQUIRE gagal setelah lot terbuat, lot tetap ada dengan stok nol. Membuat lot dan mencatat transaksi adalah dua fakta terpisah di buku besar, dan lot berstok nol adalah keadaan yang sah.
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 ```ts
 describe("addLotWithInitialStock", () => {
@@ -365,12 +365,12 @@ describe("addLotWithInitialStock", () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `addLotWithInitialStock is not defined`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Tambahkan ke `web/lib/ledger/service.ts`, setelah `addLot`:
 
@@ -398,12 +398,12 @@ export async function addLotWithInitialStock(
 }
 ```
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `20 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/ledger.test.ts
@@ -428,7 +428,7 @@ Dipakai dua kali: `<datalist>` di form (mempercepat input), dan peta di Rencana 
 pencocokan origin ke region **tidak** dibuat di sini: belum ada yang memakainya sampai
 petanya ada, dan kode yang belum dipakai siapa pun adalah kode mati.
 
-- [ ] **Step 1: Buat `web/lib/regions.ts`**
+- [x] **Step 1: Buat `web/lib/regions.ts`**
 
 ```ts
 /**
@@ -464,12 +464,12 @@ export const COFFEE_REGIONS: readonly CoffeeRegion[] = [
 ] as const;
 ```
 
-- [ ] **Step 2: Cek tipe**
+- [x] **Step 2: Cek tipe**
 
 Run: `cd web && npx tsc --noEmit`
 Expected: bersih.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add web/lib/regions.ts
@@ -494,7 +494,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 **Keamanan:** `await requireSession()` wajib jadi pernyataan pertama di setiap Server Action, termasuk `finishLotAction` yang baru. Server Action adalah endpoint HTTP yang bisa dipanggil langsung; ia tidak mewarisi perlindungan dari halaman yang menampilkan tombolnya.
 
-- [ ] **Step 1: Ubah `addLotAction` menerima gram awal**
+- [x] **Step 1: Ubah `addLotAction` menerima gram awal**
 
 Di `web/app/(app)/actions.ts`, ganti impor `addLot` menjadi `addLotWithInitialStock`, dan di dalam `addLotAction` ganti pembacaan form serta pemanggilannya:
 
@@ -520,7 +520,7 @@ Di `web/app/(app)/actions.ts`, ganti impor `addLot` menjadi `addLotWithInitialSt
 
 Tambahkan `revalidatePath("/history")` di samping revalidate yang sudah ada, karena sekarang aksi ini bisa membuat transaksi.
 
-- [ ] **Step 2: Tambahkan `finishLotAction`**
+- [x] **Step 2: Tambahkan `finishLotAction`**
 
 Di file yang sama:
 
@@ -551,7 +551,7 @@ export async function finishLotAction(
 
 Tambahkan `finishLot` ke daftar impor dari `@/lib/ledger/service`.
 
-- [ ] **Step 3: Tambahkan kolom gram awal dan datalist region ke form**
+- [x] **Step 3: Tambahkan kolom gram awal dan datalist region ke form**
 
 Di `web/app/(app)/lots/add-lot-form.tsx`:
 
@@ -595,7 +595,7 @@ Tambahkan kolom baru tepat setelah input tanggal roast:
 ```
 
 
-- [ ] **Step 4: Buat tombol Habiskan**
+- [x] **Step 4: Buat tombol Habiskan**
 
 Buat `web/app/(app)/lots/finish-lot-button.tsx`:
 
@@ -654,7 +654,7 @@ export function FinishLotButton({
 }
 ```
 
-- [ ] **Step 5: Tampilkan tombolnya di tabel lot**
+- [x] **Step 5: Tampilkan tombolnya di tabel lot**
 
 Di `web/app/(app)/lots/page.tsx`, impor `FinishLotButton` dari `./finish-lot-button`, tambahkan satu `<th>` kosong di akhir baris header:
 
@@ -676,12 +676,12 @@ dan satu `<td>` di akhir tiap baris, yang hanya berisi tombol saat stok masih ad
                     </td>
 ```
 
-- [ ] **Step 6: Verifikasi menyeluruh**
+- [x] **Step 6: Verifikasi menyeluruh**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: tipe bersih, `20 passed`, build sukses.
 
-- [ ] **Step 7: Buktikan `requireSession()` ada di setiap aksi**
+- [x] **Step 7: Buktikan `requireSession()` ada di setiap aksi**
 
 Run: `cd web && grep -n -A6 "^export async function.*Action" "app/(app)/actions.ts" | grep -n "requireSession"`
 Expected: satu baris per aksi yang diekspor (tiga: addLot, record, finishLot). Tempelkan hasilnya.
@@ -689,7 +689,7 @@ Expected: satu baris per aksi yang diekspor (tiga: addLot, record, finishLot). T
 Run: `cd web && curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' http://localhost:3000/lots` dengan dev server jalan
 Expected: `307 http://localhost:3000/login`.
 
-- [ ] **Step 8: Buktikan alurnya sampai ke database**
+- [x] **Step 8: Buktikan alurnya sampai ke database**
 
 Pakai cookie sesi yang ditandatangani sendiri (cara yang sama seperti verifikasi tugas sebelumnya di repo ini):
 
@@ -715,7 +715,7 @@ Laporkan angka stok pada tiap langkah. **Lot uji ini dibiarkan** di database den
 
 Ambil screenshot penuh `/lots` (viewport 1180x900, `device_scale_factor=2`) ke `/private/tmp/claude-501/-Users-hilmi-orca-workspaces-Coffee-CoffeeData/57847cab-e2fc-4e67-96e7-08576232b590/scratchpad/lots-lifecycle.png`, **lihat gambarnya**, dan laporkan apa pun yang rusak secara visual. Hapus skrip sementara dan berkas token setelahnya, lalu pastikan `git status` bersih.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add web/
@@ -738,14 +738,14 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 ## Definisi selesai
 
-- [ ] `uv run pytest` → `22 passed`
-- [ ] `cd web && npx vitest run` → `20 passed`
-- [ ] `npx tsc --noEmit` bersih, `npx next build` sukses
-- [ ] Tidak ada sisa `fraunces`/`karla`/`plex` di `web/`
-- [ ] `app/app.py`, `requirements.txt`, `.streamlit/` sudah tidak ada
-- [ ] README menyebut Drizzle sebagai pemilik schema
-- [ ] Menambah lot berisi selesai dalam satu langkah, terbukti sampai ke Neon
-- [ ] Tombol Habiskan membawa stok ke nol dan menambah baris riwayat, bukan menghapus
-- [ ] `requireSession()` adalah pernyataan pertama di ketiga Server Action
+- [x] `uv run pytest` → `22 passed`
+- [x] `cd web && npx vitest run` → `20 passed`
+- [x] `npx tsc --noEmit` bersih, `npx next build` sukses
+- [x] Tidak ada sisa `fraunces`/`karla`/`plex` di `web/`
+- [x] `app/app.py`, `requirements.txt`, `.streamlit/` sudah tidak ada
+- [x] README menyebut Drizzle sebagai pemilik schema
+- [x] Menambah lot berisi selesai dalam satu langkah, terbukti sampai ke Neon
+- [x] Tombol Habiskan membawa stok ke nol dan menambah baris riwayat, bukan menghapus
+- [x] `requireSession()` adalah pernyataan pertama di ketiga Server Action
 
 Setelah semua tercentang, Rencana B (isi dashboard, keadaan kosong, peta) bisa ditulis.
