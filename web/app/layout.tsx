@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
-import { Fraunces, Karla, IBM_Plex_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["300", "500"],
-  variable: "--font-fraunces",
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-geist",
 });
 
-const karla = Karla({
-  subsets: ["latin"],
-  weight: ["300", "400", "600"],
-  variable: "--font-karla",
-});
-
-const plexMono = IBM_Plex_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${fraunces.variable} ${karla.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${geist.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body bg-ground text-ink">
         {children}

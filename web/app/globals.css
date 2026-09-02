@@ -39,9 +39,9 @@
   --color-teal: var(--teal);
   --color-clay: var(--clay);
 
-  --font-display: var(--font-fraunces);
-  --font-body: var(--font-karla);
-  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-geist);
+  --font-body: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
