@@ -214,3 +214,41 @@ describe("ledger", () => {
     expect(byName).toEqual({ A: 70, B: 200 });
   });
 });
+
+describe("finishLot", () => {
+  it("mencatat koreksi keluar sebesar sisa stok", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 250);
+
+    await service.finishLot(db, lot.id);
+
+    expect(await service.currentStock(db, lot.id)).toBe(0);
+    const txns = await service.history(db, lot.id);
+    const last = txns[txns.length - 1];
+    expect(last.kind).toBe("OUT");
+    expect(last.reason).toBe("ADJUST");
+    expect(last.grams).toBe(250);
+    expect(last.note).toBe("habis");
+  });
+
+  it("riwayat tetap utuh, tidak ada yang dihapus", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 250);
+    await service.recordBrew(db, lot.id, 18);
+
+    await service.finishLot(db, lot.id);
+
+    expect((await service.history(db, lot.id)).length).toBe(3);
+  });
+
+  it("menolak lot yang stoknya sudah nol", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+
+    await expect(service.finishLot(db, lot.id)).rejects.toThrow(
+      InvalidQuantityError,
+    );
+  });
+});

@@ -105,6 +105,22 @@ async function record(
   return repo.addTransaction(db, { lotId, kind, reason, grams, note: note ?? null });
 }
 
+/**
+ * Habiskan lot: catat koreksi keluar sebesar sisa stoknya.
+ *
+ * Bukan menghapus. Stok dihitung dari transaksi, jadi menghapus transaksi
+ * berarti mengarang ulang sejarah. Lot berstok nol adalah keadaan yang sah.
+ *
+ * Stok nol ditolak lewat `record()` yang sudah menolak grams <= 0.
+ */
+export async function finishLot(
+  db: LedgerDb,
+  lotId: number,
+): Promise<Transaction> {
+  const stock = await currentStock(db, lotId);
+  return recordAdjust(db, lotId, stock, "OUT", "habis");
+}
+
 export async function currentStock(db: LedgerDb, lotId: number): Promise<number> {
   const txns = await repo.transactionsFor(db, lotId);
   return txns.reduce((total, t) => total + (t.kind === "IN" ? t.grams : -t.grams), 0);
