@@ -30,7 +30,7 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-full flex-col">
       <header className="border-b border-line bg-panel">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-4">
+        <div className="mx-auto flex max-w-[960px] items-center justify-between gap-6 px-6 py-4">
           <span className="font-display text-lg font-medium text-ink">
             Coffee Ledger
           </span>
@@ -52,7 +52,7 @@ export default async function AppLayout({
         </div>
       </header>
       <main className="flex-1">
-        <div className="mx-auto max-w-5xl px-6 py-10">{children}</div>
+        <div className="mx-auto max-w-[960px] px-6 py-10">{children}</div>
       </main>
     </div>
   );

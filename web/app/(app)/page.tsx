@@ -52,26 +52,35 @@ export default async function DashboardPage() {
         <h2 className="mb-6 font-display text-base font-medium text-ink">
           Stok per lot
         </h2>
-        <div className="grid grid-cols-[minmax(0,200px)_1fr_auto] items-center gap-x-4 gap-y-[2px]">
+        {/*
+          Label column sizes to its content (max-content) so long lot names
+          are never truncated. The bar column reserves space at its right
+          edge for the value, and the value itself is a child of the amber
+          fill (positioned at left:100% of the fill's own — dynamic — width),
+          so it always trails the actual tip of the bar rather than sitting
+          in a fixed column far past a short bar.
+        */}
+        <div className="grid grid-cols-[max-content_1fr] items-center gap-x-6 gap-y-[2px]">
           {sorted.map((l) => {
             const pct = maxStock > 0 ? (l.stock / maxStock) * 100 : 0;
             return (
               <Fragment key={l.lot.id}>
-                <span
-                  className="truncate font-body text-sm text-ink"
-                  title={l.lot.name}
-                >
+                <span className="whitespace-nowrap font-body text-sm text-ink">
                   {l.lot.name}
                 </span>
-                <div className="h-2 bg-panel-2">
+                <div
+                  className="h-2 bg-panel-2"
+                  style={{ width: "calc(100% - 6rem)" }}
+                >
                   <div
-                    className="h-2 rounded-r-[4px] bg-amber"
+                    className="relative h-2 rounded-r-[4px] bg-amber"
                     style={{ width: `${pct}%` }}
-                  />
+                  >
+                    <span className="absolute top-1/2 left-full -translate-y-1/2 pl-2 font-mono text-sm tabular-nums whitespace-nowrap text-ink-dim">
+                      {formatGrams(l.stock)}
+                    </span>
+                  </div>
                 </div>
-                <span className="w-20 text-right font-mono text-sm tabular-nums text-ink-dim">
-                  {formatGrams(l.stock)}
-                </span>
               </Fragment>
             );
           })}
