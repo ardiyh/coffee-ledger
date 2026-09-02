@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+/*
+ * Coffee Ledger is deliberately dark-only (the Streamlit app it replaces is
+ * too), so there's no light-mode branch here — every color is painted
+ * explicitly from these tokens, once.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ground: #13110f; /* page background */
+  --panel: #1c1916; /* cards, surfaces */
+  --panel-2: #221e1a; /* recessed, e.g. bar track */
+  --line: #2e2823; /* borders, dividers */
+  --ink: #e9e3db; /* primary text */
+  --ink-dim: #9c9086; /* secondary text */
+  --ink-faint: #7e7369; /* labels, captions */
+  --amber: #c8965a; /* single accent; also the bar hue */
+  --amber-dim: #8a6538;
+  --teal: #17a2b8; /* IN / stock increase */
+  --clay: #b5654a; /* OUT / stock decrease */
 }
 
+/*
+ * Wire the tokens into Tailwind's theme so utilities like `bg-panel`,
+ * `text-ink-dim`, `border-line`, `font-display` etc. are available, instead
+ * of reaching for arbitrary-value classes (`bg-[var(--panel)]`) everywhere.
+ * The custom properties above remain the single source of truth; this block
+ * just aliases them into Tailwind's namespaces.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-teal: var(--teal);
+  --color-clay: var(--clay);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-karla);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ground);
+  color: var(--ink);
 }
+
+/*
+ * Tailwind ships a `tabular-nums` utility (font-variant-numeric) already —
+ * reach for that class wherever digits need to line up (stat tiles, bar
+ * values, timestamps) instead of redefining it here.
+ */

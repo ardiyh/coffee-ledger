@@ -1,69 +1,95 @@
-import Image from "next/image";
+import { Fragment } from "react";
+import Link from "next/link";
+import { requireSession } from "@/lib/session";
+import { db } from "@/lib/db";
+import { stockSummary } from "@/lib/ledger/service";
+import { formatGrams } from "@/lib/format";
 
-export default function Home() {
+export default async function DashboardPage() {
+  // Real auth boundary for this page — see lib/session.ts for why the
+  // (app) layout's redirect isn't enough on its own.
+  await requireSession();
+
+  const lots = await stockSummary(db);
+
+  if (lots.length === 0) {
+    return (
+      <div className="rounded-lg border border-line bg-panel p-10 text-center">
+        <p className="font-display text-lg font-medium text-ink">
+          Belum ada lot.
+        </p>
+        <p className="mt-2 font-body text-sm text-ink-dim">
+          Tambahkan lot pertama di halaman{" "}
+          <Link
+            href="/lots"
+            className="text-amber underline underline-offset-2"
+          >
+            Lots
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
+
+  const totalStock = lots.reduce((sum, l) => sum + l.stock, 0);
+  const activeLots = lots.filter((l) => l.stock > 0).length;
+  const totalLots = lots.length;
+
+  // Rule 7: sort bars by stock descending.
+  const sorted = [...lots].sort((a, b) => b.stock - a.stock);
+  const maxStock = sorted[0]?.stock ?? 0;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col gap-10">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile label="Total stok" value={formatGrams(totalStock)} />
+        <StatTile label="Lot aktif" value={String(activeLots)} />
+        <StatTile label="Total lot" value={String(totalLots)} />
+      </section>
+
+      <section className="rounded-lg border border-line bg-panel p-6">
+        <h2 className="mb-6 font-display text-base font-medium text-ink">
+          Stok per lot
+        </h2>
+        <div className="grid grid-cols-[minmax(0,200px)_1fr_auto] items-center gap-x-4 gap-y-[2px]">
+          {sorted.map((l) => {
+            const pct = maxStock > 0 ? (l.stock / maxStock) * 100 : 0;
+            return (
+              <Fragment key={l.lot.id}>
+                <span
+                  className="truncate font-body text-sm text-ink"
+                  title={l.lot.name}
+                >
+                  {l.lot.name}
+                </span>
+                <div className="h-2 bg-panel-2">
+                  <div
+                    className="h-2 rounded-r-[4px] bg-amber"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="w-20 text-right font-mono text-sm tabular-nums text-ink-dim">
+                  {formatGrams(l.stock)}
+                </span>
+              </Fragment>
+            );
+          })}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+    </div>
+  );
+}
+
+function StatTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-line bg-panel p-6">
+      <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
+        {label}
+      </p>
+      <p className="mt-2 font-display text-3xl font-light tabular-nums text-ink">
+        {value}
+      </p>
     </div>
   );
 }
