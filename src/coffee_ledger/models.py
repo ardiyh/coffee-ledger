@@ -4,9 +4,10 @@ v1 melacak roasted bean. Schema sengaja simpel tapi disiapkan buat di-extend
 (green bean + roasting yield) di fase berikutnya.
 """
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from enum import StrEnum
 
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
 
@@ -34,7 +35,10 @@ class Lot(SQLModel, table=True):
     origin: str
     varietal: str
     roast_date: date
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
     notes: str | None = None
 
 
@@ -43,7 +47,10 @@ class Transaction(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     lot_id: int = Field(foreign_key="lot.id", index=True)
-    ts: datetime = Field(default_factory=datetime.now)
+    ts: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
     kind: TxnKind
     reason: TxnReason
     grams: float
