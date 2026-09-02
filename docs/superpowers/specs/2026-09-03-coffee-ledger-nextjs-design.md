@@ -160,7 +160,11 @@ Dikerjakan lebih dulu, di Python, sebelum Next.js menulis apa pun.
 1. **Periksa data yang ada di Neon** — `SELECT id, ts FROM transaction ORDER BY id`.
    Tentukan mana yang ditulis dari Streamlit Cloud (UTC) dan mana dari laptop lokal (WIB).
    Ini menentukan langkah 4 dan belum bisa dilakukan tanpa akses DB.
-2. **Test dulu (RED):** `assert txn.ts.tzinfo is not None`.
+2. **Test dulu (RED):** assertion dilakukan pada objek hasil `default_factory`
+   (`Transaction().ts`), **bukan setelah round-trip DB.** Terverifikasi 2026-09-03:
+   SQLite membuang `tzinfo` walaupun kolomnya `DateTime(timezone=True)` — nilai UTC-nya
+   benar tapi kembali naive. Karena test suite jalan di SQLite dan produksi di Postgres,
+   assertion round-trip akan merah walau kodenya benar.
 3. **Kode:** `datetime.now(UTC)` sebagai `default_factory`, plus
    `sa_column=Column(DateTime(timezone=True))` di `Lot.created_at` dan `Transaction.ts`.
 4. **SQL manual ke Neon.** `SQLModel.metadata.create_all()` hanya membuat tabel yang belum
@@ -206,6 +210,11 @@ pandas + notebook masih lebih cocok untuk itu daripada TS.
   ternyata ada campuran UTC dan WIB, klausa `USING` tunggal tidak cukup.
 - **Asumsi Streamlit Cloud jalan di UTC** belum diverifikasi langsung; dikonfirmasi lewat
   langkah 1.
+- **Session `TimeZone` Neon diasumsikan UTC.** Ini yang membuat urutan ALTER-vs-deploy tidak
+  kritis (konversi naive↔aware di kedua arah memakai session TimeZone). Diverifikasi dengan
+  `SHOW TimeZone;` di §9 langkah 1.
+- **Round-trip Postgres belum diverifikasi lokal** — tidak ada Postgres maupun Docker di
+  mesin dev. Diverifikasi langsung di Neon setelah ALTER.
 - **Dual-run mengunci schema.** Selama Streamlit hidup, tidak boleh ada kolom baru dari sisi
   Drizzle. Kalau Next.js butuh kolom baru sebelum Fase 4d, tambahkan lewat SQLModel +
   ALTER manual, lalu introspect ulang.
