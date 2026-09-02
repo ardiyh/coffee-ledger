@@ -11,8 +11,9 @@ diseduh sendiri atau dikasih orang. Sekaligus projek belajar *software engineeri
 
 ## Stack
 
-- Python 3.12 · `uv` · `SQLModel` (SQLite → Postgres) · Streamlit · pytest · ruff
-- Analisa: pandas + Jupyter
+- **App:** Next.js 16 · TypeScript · Tailwind v4 · Drizzle · Auth.js · Vitest + PGlite — di Vercel
+- **Data:** Neon Postgres
+- **Analisa:** Python 3.12 · `uv` · SQLModel (jalur baca) · pandas + Jupyter · pytest · ruff
 
 ## Arsitektur
 
@@ -37,20 +38,27 @@ Jangan menjalankan `SQLModel.metadata.create_all()` terhadap database produksi l
 ## Struktur
 
 ```
-src/coffee_ledger/   # core: models, repository, service
-app/                 # Streamlit UI
+web/                 # app Next.js (UI + core TypeScript + test)
+  lib/ledger/        # core: schema, repository, service
+  app/(app)/         # halaman di balik login
+src/coffee_ledger/   # jalur baca Python buat analisa
 tests/               # pytest
 notebooks/           # analisa (pandas)
-data/                # SQLite db (lokal, gak di-commit)
+data/                # SQLite lokal buat eksperimen (gak di-commit)
 ```
 
 ## Cara jalanin (dev)
 
 ```bash
-uv sync                            # pasang semua deps
-uv run pytest                      # jalanin test
-uv run ruff check                  # lint
-uv run streamlit run app/app.py    # jalanin app (mulai Fase 2)
+# app (Next.js)
+cd web && npm install
+npm run dev                        # http://localhost:3000
+npm test                           # 14 test, pakai PGlite, gak butuh DATABASE_URL
+
+# sisi Python (analisa)
+uv sync
+uv run pytest
+uv run ruff check
 ```
 
 ## Roadmap
