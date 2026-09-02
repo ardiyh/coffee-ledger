@@ -119,6 +119,24 @@ Auth.js v5, satu provider Google, callback `signIn` yang hanya meloloskan satu e
 `users` / `sessions` / `accounts` ke DB yang sedang dipakai bareng Streamlit, dan itu
 melanggar aturan kepemilikan schema di §5. JWT = nol tabel baru.
 
+**Koreksi 2026-09-03 — gerbang di layout saja tidak cukup.** Rencana awal menaruh gerbang
+di middleware; itu diubah ke layout route group `(app)` karena auth yang hanya bersandar
+pada middleware punya riwayat bypass. Tapi dokumentasi resmi Next.js
+(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`, bagian "Layouts and auth
+checks") menyatakan layout **juga** bukan tempat yang benar untuk gerbang utama: karena
+Partial Rendering, layout tidak dirender ulang saat navigasi antar-route, jadi sesi tidak
+diperiksa di setiap perpindahan halaman. Layout juga tidak mengontrol apakah sisa route
+ikut dirender.
+
+Yang dianjurkan dokumen: periksa sedekat mungkin dengan sumber data — pola *Data Access
+Layer*, sebuah `requireSession()` yang dipanggil di tiap page dan tiap Server Action.
+
+Saat ini baru ada satu halaman di bawah `(app)`, jadi celah itu belum punya permukaan.
+**Tapi begitu halaman dashboard/lots/catat/riwayat ditambahkan, `requireSession()` wajib
+dipanggil di masing-masing page dan Server Action.** Redirect di layout tetap dipertahankan
+sebagai kenyamanan UX (pengunjung tanpa sesi diarahkan ke login, bukan melihat error), bukan
+sebagai batas keamanannya.
+
 ## 7. Alur data & error
 
 Server Action memanggil service langsung. Tidak ada lapisan REST — tidak ada konsumen lain
