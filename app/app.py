@@ -5,8 +5,9 @@ Jalanin: `uv run streamlit run app/app.py`
 """
 
 import sys
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import altair as alt
 import pandas as pd
@@ -32,6 +33,16 @@ def _db_url() -> str | None:
         return st.secrets["DATABASE_URL"]
     except Exception:
         return None
+
+
+WIB = ZoneInfo("Asia/Jakarta")
+
+
+def _to_wib(ts: datetime) -> datetime:
+    """UTC → waktu Jakarta. Postgres balikin aware, SQLite naive — samain dulu."""
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=UTC)
+    return ts.astimezone(WIB)
 
 
 @st.cache_resource
@@ -185,7 +196,7 @@ with tab_history:
         hist = pd.DataFrame(
             [
                 {
-                    "Waktu": t.ts,
+                    "Waktu": _to_wib(t.ts),
                     "Lot": names.get(t.lot_id, t.lot_id),
                     "Jenis": t.kind,
                     "Alasan": t.reason,
