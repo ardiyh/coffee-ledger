@@ -54,11 +54,12 @@ export default async function DashboardPage() {
         </h2>
         {/*
           Label column sizes to its content (max-content) so long lot names
-          are never truncated. The bar column reserves space at its right
-          edge for the value, and the value itself is a child of the amber
-          fill (positioned at left:100% of the fill's own — dynamic — width),
-          so it always trails the actual tip of the bar rather than sitting
-          in a fixed column far past a short bar.
+          are never truncated. There is no visible track: bars are sorted and
+          every value is printed, so a track behind them carries no
+          information and only gives the label something to collide with.
+          Bars sit directly on the panel background, and the value is a
+          sibling positioned just past the bar's own — dynamic — width, with
+          a small gap, so it always trails the tip rather than sitting on it.
         */}
         <div className="grid grid-cols-[max-content_1fr] items-center gap-x-6 gap-y-[2px]">
           {sorted.map((l) => {
@@ -68,18 +69,14 @@ export default async function DashboardPage() {
                 <span className="whitespace-nowrap font-body text-sm text-ink">
                   {l.lot.name}
                 </span>
-                <div
-                  className="h-2 bg-panel-2"
-                  style={{ width: "calc(100% - 6rem)" }}
-                >
+                <div className="flex h-2 items-center" style={{ width: "calc(100% - 6rem)" }}>
                   <div
-                    className="relative h-2 rounded-r-[4px] bg-amber"
+                    className="h-2 shrink-0 rounded-r-[4px] bg-amber"
                     style={{ width: `${pct}%` }}
-                  >
-                    <span className="absolute top-1/2 left-full -translate-y-1/2 pl-2 font-mono text-sm tabular-nums whitespace-nowrap text-ink-dim">
-                      {formatGrams(l.stock)}
-                    </span>
-                  </div>
+                  />
+                  <span className="pl-2 font-mono text-sm tabular-nums whitespace-nowrap text-ink-dim">
+                    {formatGrams(l.stock)}
+                  </span>
                 </div>
               </Fragment>
             );

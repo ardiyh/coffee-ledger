@@ -2,12 +2,12 @@ import { signIn } from "@/auth";
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 dark:bg-black">
-      <div className="w-full max-w-sm rounded-xl border border-black/[.08] bg-white p-8 text-center shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="flex flex-1 items-center justify-center bg-ground px-4">
+      <div className="w-full max-w-sm rounded-lg border border-line bg-panel p-8 text-center">
+        <h1 className="font-display text-2xl font-medium text-ink">
           Coffee Ledger
         </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 font-body text-sm text-ink-dim">
           Access is limited to the owner&apos;s Google account.
         </p>
         <form
@@ -19,7 +19,7 @@ export default function LoginPage() {
         >
           <button
             type="submit"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-amber px-5 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
           >
             Sign in with Google
           </button>
