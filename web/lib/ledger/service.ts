@@ -34,6 +34,28 @@ export async function addLot(
   return repo.addLot(db, newLot);
 }
 
+/**
+ * Buat lot, dan kalau gram awal diberikan, catat sekalian ACQUIRE-nya.
+ *
+ * Sengaja tanpa rollback: kalau ACQUIRE gagal setelah lot terbuat, lot tetap
+ * ada dengan stok nol. Membuat lot dan mencatat transaksi adalah dua fakta
+ * terpisah di buku besar, dan lot berstok nol itu keadaan yang sah.
+ *
+ * `initialGrams` yang <= 0 ditolak oleh `record()`, bukan diabaikan diam-diam.
+ * Form mengirim `undefined` kalau kolomnya dikosongkan.
+ */
+export async function addLotWithInitialStock(
+  db: LedgerDb,
+  args: { name: string; origin: string; varietal: string; roastDate: string; notes?: string | null },
+  initialGrams?: number,
+): Promise<Lot> {
+  const lot = await addLot(db, args);
+  if (initialGrams !== undefined) {
+    await recordAcquire(db, lot.id, initialGrams, "stok awal");
+  }
+  return lot;
+}
+
 export async function listLots(db: LedgerDb): Promise<Lot[]> {
   return repo.listLots(db);
 }

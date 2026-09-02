@@ -252,3 +252,46 @@ describe("finishLot", () => {
     );
   });
 });
+
+describe("addLotWithInitialStock", () => {
+  const args = {
+    name: "Gayo Bener Kelipah",
+    origin: "Gayo, Aceh",
+    varietal: "Red Bourbon",
+    roastDate: "2026-06-20",
+  };
+
+  it("tanpa gram awal: lot dibuat, stok nol, tanpa transaksi", async () => {
+    const db = await freshDb();
+
+    const lot = await service.addLotWithInitialStock(db, args);
+
+    expect(lot.id).toBeDefined();
+    expect(await service.currentStock(db, lot.id)).toBe(0);
+    expect((await service.history(db, lot.id)).length).toBe(0);
+  });
+
+  it("dengan gram awal: stok langsung terisi lewat satu ACQUIRE", async () => {
+    const db = await freshDb();
+
+    const lot = await service.addLotWithInitialStock(db, args, 250);
+
+    expect(await service.currentStock(db, lot.id)).toBe(250);
+    const txns = await service.history(db, lot.id);
+    expect(txns.length).toBe(1);
+    expect(txns[0].reason).toBe("ACQUIRE");
+    expect(txns[0].grams).toBe(250);
+  });
+
+  it("gram awal nol ditolak, tapi lot-nya tetap terbuat", async () => {
+    const db = await freshDb();
+
+    await expect(service.addLotWithInitialStock(db, args, 0)).rejects.toThrow(
+      InvalidQuantityError,
+    );
+
+    const lots = await service.listLots(db);
+    expect(lots.length).toBe(1);
+    expect(await service.currentStock(db, lots[0].id)).toBe(0);
+  });
+});
