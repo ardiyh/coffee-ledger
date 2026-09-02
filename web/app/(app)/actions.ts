@@ -5,11 +5,12 @@ import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { LedgerError } from "@/lib/ledger/errors";
 import {
-  addLot,
+  addLotWithInitialStock,
   recordAcquire,
   recordBrew,
   recordGift,
   recordAdjust,
+  finishLot,
 } from "@/lib/ledger/service";
 
 /**
@@ -45,24 +46,28 @@ export async function addLotAction(
     return { error: "Nama, origin, varietal, dan tanggal roast wajib diisi." };
   }
 
+  const initialGramsRaw = String(formData.get("initialGrams") ?? "").trim();
+  const initialGrams = initialGramsRaw === "" ? undefined : Number(initialGramsRaw);
+
+  if (initialGrams !== undefined && !Number.isFinite(initialGrams)) {
+    return { error: "Gram awal harus berupa angka." };
+  }
+
   try {
-    await addLot(db, {
-      name,
-      origin,
-      varietal,
-      roastDate,
-      notes: notes || null,
-    });
+    await addLotWithInitialStock(
+      db,
+      { name, origin, varietal, roastDate, notes: notes || null },
+      initialGrams,
+    );
   } catch (err) {
-    if (err instanceof LedgerError) {
-      return { error: err.message };
-    }
+    if (err instanceof LedgerError) return { error: err.message };
     throw err;
   }
 
   // Fresh numbers everywhere a lot list or stock figure is shown.
   revalidatePath("/lots");
   revalidatePath("/record");
+  revalidatePath("/history");
   revalidatePath("/");
   return { success: true };
 }
@@ -118,6 +123,29 @@ export async function recordAction(
 
   // Fresh numbers on the record form itself (stock shown per option),
   // history, and the dashboard.
+  revalidatePath("/record");
+  revalidatePath("/history");
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function finishLotAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireSession();
+
+  const lotId = Number(formData.get("lotId"));
+  if (!Number.isFinite(lotId) || lotId <= 0) return { error: "Lot gak dikenal." };
+
+  try {
+    await finishLot(db, lotId);
+  } catch (err) {
+    if (err instanceof LedgerError) return { error: err.message };
+    throw err;
+  }
+
+  revalidatePath("/lots");
   revalidatePath("/record");
   revalidatePath("/history");
   revalidatePath("/");

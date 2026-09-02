@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { stockSummary } from "@/lib/ledger/service";
 import { formatGrams } from "@/lib/format";
 import { AddLotForm } from "./add-lot-form";
+import { FinishLotButton } from "./finish-lot-button";
 
 export default async function LotsPage() {
   // Real auth boundary for this page — see lib/session.ts for why the
@@ -49,6 +50,7 @@ export default async function LotsPage() {
                   <th className="py-2 pl-4 text-right font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
                     Stok
                   </th>
+                  <th className="py-2 pl-4" />
                 </tr>
               </thead>
               <tbody>
@@ -62,6 +64,15 @@ export default async function LotsPage() {
                     </td>
                     <td className="py-3 pl-4 text-right font-mono tabular-nums text-ink">
                       {formatGrams(stock)}
+                    </td>
+                    <td className="py-3 pl-4 text-right">
+                      {stock > 0 ? (
+                        <FinishLotButton
+                          lotId={lot.id}
+                          lotName={lot.name}
+                          grams={formatGrams(stock)}
+                        />
+                      ) : null}
                     </td>
                   </tr>
                 ))}

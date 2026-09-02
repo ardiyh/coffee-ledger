@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useEffect } from "react";
 import { addLotAction, type ActionState } from "../actions";
+import { COFFEE_REGIONS } from "@/lib/regions";
 
 const initialActionState: ActionState = {};
 
@@ -45,9 +46,15 @@ export function AddLotForm({ todayISO }: { todayISO: string }) {
           name="origin"
           type="text"
           required
+          list="coffee-regions"
           className={inputClass}
-          placeholder="Aceh, Indonesia"
+          placeholder="Kerinci, Jambi"
         />
+        <datalist id="coffee-regions">
+          {COFFEE_REGIONS.map((r) => (
+            <option key={r.name} value={r.name} />
+          ))}
+        </datalist>
       </label>
 
       <label className="flex flex-col gap-1">
@@ -69,6 +76,18 @@ export function AddLotForm({ todayISO }: { todayISO: string }) {
           required
           defaultValue={todayISO}
           className={inputClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Stok awal, gram (opsional)</span>
+        <input
+          name="initialGrams"
+          type="number"
+          step="any"
+          min="0"
+          className={inputClass}
+          placeholder="250"
         />
       </label>
 
