@@ -4,8 +4,6 @@
  * Ini yang tahu *aturan*: gimana nambah lot, hitung stok, dan validasi. No SQL
  * here — data access is delegated to repository.ts.
  */
-import { eq, sum } from "drizzle-orm";
-
 import {
   InsufficientStockError,
   InvalidQuantityError,
@@ -21,7 +19,6 @@ import type {
   TxnKind,
   TxnReason,
 } from "./repository";
-import { transaction } from "./schema";
 
 export interface NewLotArgs {
   name: string;
@@ -178,8 +175,8 @@ export async function stockSummary(db: LedgerDb): Promise<LotStock[]> {
   return repo.stockSummary(db);
 }
 
-export interface OutflowRow { reason: TxnReason; grams: number; }
-export interface RecipientRow { recipient: string; grams: number; }
+export type OutflowRow = repo.OutflowRow;
+export type RecipientRow = repo.RecipientRow;
 
 /**
  * Gram yang keluar, dikelompokkan per alasan, urut menurun.
@@ -188,15 +185,8 @@ export interface RecipientRow { recipient: string; grams: number; }
  * bukan bagian dari satu keseluruhan, jadi menampilkannya bersama akan berbohong
  * tentang proporsi.
  */
-export async function outflowByReason(db: LedgerDb): Promise<OutflowRow[]> {
-  const rows = await db
-    .select({ reason: transaction.reason, grams: sum(transaction.grams) })
-    .from(transaction)
-    .where(eq(transaction.kind, "OUT"))
-    .groupBy(transaction.reason);
-  return rows
-    .map((r) => ({ reason: r.reason, grams: Number(r.grams) }))
-    .sort((a, b) => b.grams - a.grams);
+export async function outflowByReason(db: LedgerDb): Promise<repo.OutflowRow[]> {
+  return repo.outflowByReason(db);
 }
 
 /**
@@ -208,19 +198,6 @@ export async function outflowByReason(db: LedgerDb): Promise<OutflowRow[]> {
  * beragam sampai hasilnya berantakan, itu sinyal bahwa penerima layak jadi kolom
  * sendiri, bukan alasan menambah kolom sekarang.
  */
-export async function giftsByRecipient(db: LedgerDb): Promise<RecipientRow[]> {
-  const rows = await db
-    .select({ note: transaction.note, grams: transaction.grams })
-    .from(transaction)
-    .where(eq(transaction.reason, "GIFT"));
-
-  const byKey = new Map<string, RecipientRow>();
-  for (const r of rows) {
-    const label = (r.note ?? "").trim() || "(tanpa catatan)";
-    const key = label.toLowerCase();
-    const existing = byKey.get(key);
-    if (existing) existing.grams += r.grams;
-    else byKey.set(key, { recipient: label, grams: r.grams });
-  }
-  return [...byKey.values()].sort((a, b) => b.grams - a.grams);
+export async function giftsByRecipient(db: LedgerDb): Promise<repo.RecipientRow[]> {
+  return repo.giftsByRecipient(db);
 }

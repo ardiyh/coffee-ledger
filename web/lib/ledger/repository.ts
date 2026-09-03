@@ -7,7 +7,7 @@
  * Functions take the `db` handle as their first argument (not a class) — keeps
  * this injectable for tests (PGlite) without a DI container.
  */
-import { asc, eq, sql as rawSql } from "drizzle-orm";
+import { asc, eq, sql as rawSql, sum } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import { lot, transaction } from "./schema";
@@ -166,4 +166,35 @@ export async function stockSummary(db: LedgerDb): Promise<LotStock[]> {
     .leftJoin(transaction, eq(transaction.lotId, lot.id))
     .groupBy(lot.id);
   return rows.map((r) => ({ lot: mapLot(r.lot), stock: Number(r.stock) }));
+}
+
+export interface OutflowRow { reason: TxnReason; grams: number; }
+export interface RecipientRow { recipient: string; grams: number; }
+
+export async function outflowByReason(db: LedgerDb): Promise<OutflowRow[]> {
+  const rows = await db
+    .select({ reason: transaction.reason, grams: sum(transaction.grams) })
+    .from(transaction)
+    .where(eq(transaction.kind, "OUT"))
+    .groupBy(transaction.reason);
+  return rows
+    .map((r) => ({ reason: r.reason, grams: Number(r.grams) }))
+    .sort((a, b) => b.grams - a.grams);
+}
+
+export async function giftsByRecipient(db: LedgerDb): Promise<RecipientRow[]> {
+  const rows = await db
+    .select({ note: transaction.note, grams: transaction.grams })
+    .from(transaction)
+    .where(eq(transaction.reason, "GIFT"));
+
+  const byKey = new Map<string, RecipientRow>();
+  for (const r of rows) {
+    const label = (r.note ?? "").trim() || "(tanpa catatan)";
+    const key = label.toLowerCase();
+    const existing = byKey.get(key);
+    if (existing) existing.grams += r.grams;
+    else byKey.set(key, { recipient: label, grams: r.grams });
+  }
+  return [...byKey.values()].sort((a, b) => b.grams - a.grams);
 }
