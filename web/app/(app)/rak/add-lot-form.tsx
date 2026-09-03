@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, useEffect } from "react";
+import { useActionState, useRef, useState } from "react";
 import { addLotAction, type ActionState } from "../actions";
 import { composeLotName } from "@/lib/format";
 
@@ -23,10 +23,6 @@ export function AddLotForm({
   todayISO: string;
   suggestions: LotSuggestions;
 }) {
-  const [state, formAction, pending] = useActionState(
-    addLotAction,
-    initialActionState,
-  );
   const formRef = useRef<HTMLFormElement>(null);
 
   const [origin, setOrigin] = useState("");
@@ -38,8 +34,12 @@ export function AddLotForm({
   const composed = composeLotName(origin, processMethod, special);
   const nameValue = nameTouched ? name : composed;
 
-  useEffect(() => {
-    if (state.success) {
+  // Reset happens here, right after the write we know succeeded — not in a
+  // useEffect watching `state.success`, which would run the reset as an
+  // unrelated side effect of every render where it's true.
+  async function submit(prevState: ActionState, formData: FormData) {
+    const result = await addLotAction(prevState, formData);
+    if (result.success) {
       formRef.current?.reset();
       setOrigin("");
       setProcessMethod("");
@@ -47,7 +47,13 @@ export function AddLotForm({
       setName("");
       setNameTouched(false);
     }
-  }, [state.success]);
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(
+    submit,
+    initialActionState,
+  );
 
   return (
     <form
