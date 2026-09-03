@@ -15,6 +15,7 @@ import {
   LotNotFoundError,
 } from "./errors";
 import * as service from "./service";
+import { daysSince } from "../format";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DDL_PATH = path.resolve(__dirname, "../../drizzle/0000_simple_madame_masque.sql");
@@ -293,5 +294,19 @@ describe("addLotWithInitialStock", () => {
     const lots = await service.listLots(db);
     expect(lots.length).toBe(1);
     expect(await service.currentStock(db, lots[0].id)).toBe(0);
+  });
+});
+
+describe("daysSince", () => {
+  it("menghitung selisih hari kalender", () => {
+    expect(daysSince("2026-06-18", new Date("2026-09-03T00:00:00+07:00"))).toBe(77);
+  });
+
+  it("hari ini nol", () => {
+    expect(daysSince("2026-09-03", new Date("2026-09-03T23:00:00+07:00"))).toBe(0);
+  });
+
+  it("tanggal besok negatif, bukan dilempar", () => {
+    expect(daysSince("2026-09-04", new Date("2026-09-03T10:00:00+07:00"))).toBe(-1);
   });
 });

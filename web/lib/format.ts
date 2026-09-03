@@ -53,6 +53,28 @@ export function formatWIB(date: Date): string {
   return `${day} ${month} ${year} ${hour}:${minute}`;
 }
 
+/**
+ * Selisih hari kalender antara sebuah tanggal roast dan hari ini, dihitung di WIB.
+ *
+ * `roastDate` bertipe `date` di Postgres, jadi ia string `YYYY-MM-DD` tanpa jam dan
+ * tanpa timezone. Yang dibandingkan tanggal kalender, bukan durasi, supaya jam
+ * berapa pun di hari yang sama menghasilkan angka yang sama.
+ */
+export function daysSince(roastDate: string, now: Date = new Date()): number {
+  const todayWIB = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+  }).format(now);
+
+  // Date.UTC menerima bulan berbasis nol, jadi bulannya dikurangi satu.
+  // Keduanya dinormalkan ke tengah malam UTC supaya yang tersisa cuma selisih hari.
+  const toUTC = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+
+  return Math.round((toUTC(todayWIB) - toUTC(roastDate)) / 86_400_000);
+}
+
 const GRAM_FORMATTER = new Intl.NumberFormat("id-ID");
 
 /** Format a gram quantity for display, e.g. 1234 -> "1.234 g". */
