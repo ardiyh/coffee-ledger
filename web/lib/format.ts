@@ -75,6 +75,33 @@ export function daysSince(roastDate: string, now: Date = new Date()): number {
   return Math.round((toUTC(todayWIB) - toUTC(roastDate)) / 86_400_000);
 }
 
+/**
+ * Susun nama lot dari bagian-bagiannya: {origin pendek} {kata khusus} {proses}.
+ *
+ * Nama lot selama ini mengulang informasi yang sudah ada di kolom lain, dan
+ * dua salinan informasi yang sama pada akhirnya akan berbeda. Menyusunnya
+ * membuat nama jadi turunan, bukan hal terpisah yang harus dijaga.
+ *
+ * Bentuk pendek origin diambil dengan memotong di koma pertama, jadi
+ * "Gayo, Aceh" jadi "Gayo". Ini juga jalan untuk origin ketikan bebas yang
+ * tidak ada di daftar region.
+ *
+ * Semua bagian boleh kosong: form memanggil ini sambil pengguna mengetik,
+ * jadi keadaan setengah terisi itu normal, bukan kesalahan.
+ */
+export function composeLotName(
+  origin: string,
+  processMethod: string,
+  special?: string,
+): string {
+  const originShort = (origin.split(",")[0] ?? "").trim();
+  return [originShort, (special ?? "").trim(), processMethod.trim()]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const GRAM_FORMATTER = new Intl.NumberFormat("id-ID");
 
 /** Format a gram quantity for display, e.g. 1234 -> "1.234 g". */

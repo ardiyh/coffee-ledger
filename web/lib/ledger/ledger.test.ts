@@ -15,7 +15,7 @@ import {
   LotNotFoundError,
 } from "./errors";
 import * as service from "./service";
-import { daysSince } from "../format";
+import { composeLotName, daysSince } from "../format";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DRIZZLE_DIR = path.resolve(__dirname, "../../drizzle");
@@ -438,5 +438,30 @@ describe("daysSince", () => {
 
   it("tanggal besok negatif, bukan dilempar", () => {
     expect(daysSince("2026-09-04", new Date("2026-09-03T10:00:00+07:00"))).toBe(-1);
+  });
+});
+
+describe("composeLotName", () => {
+  it("menggabungkan bentuk pendek origin dengan proses", () => {
+    expect(composeLotName("Gayo, Aceh", "Wine")).toBe("Gayo Wine");
+    expect(composeLotName("Kerinci, Jambi", "Natural Anaerob")).toBe(
+      "Kerinci Natural Anaerob",
+    );
+  });
+
+  it("menyelipkan kata khusus di antara origin dan proses", () => {
+    expect(
+      composeLotName("Gayo, Aceh", "Darkroom Natural Anaerob 48H", "Single Var Typica"),
+    ).toBe("Gayo Single Var Typica Darkroom Natural Anaerob 48H");
+  });
+
+  it("origin tanpa koma dipakai apa adanya", () => {
+    expect(composeLotName("Toraja", "Washed")).toBe("Toraja Washed");
+  });
+
+  it("bagian kosong dilewati dan spasi berlebih dirapikan", () => {
+    expect(composeLotName("  Gayo, Aceh  ", "  Wine  ", "   ")).toBe("Gayo Wine");
+    expect(composeLotName("", "Washed")).toBe("Washed");
+    expect(composeLotName("Gayo, Aceh", "")).toBe("Gayo");
   });
 });
