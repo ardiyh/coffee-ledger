@@ -29,3 +29,9 @@ export const COFFEE_REGIONS: readonly CoffeeRegion[] = [
   { name: "Rantekarua, Sulawesi Selatan", lat: -2.9, lon: 119.9 },
   { name: "Wamena, Papua Pegunungan", lat: -4.1, lon: 138.95 },
 ] as const;
+
+/** Cocokkan teks origin ke region yang dikenal. Tidak peka besar-kecil huruf. */
+export function findRegion(origin: string): CoffeeRegion | undefined {
+  const needle = origin.trim().toLowerCase();
+  return COFFEE_REGIONS.find((r) => r.name.toLowerCase() === needle);
+}
