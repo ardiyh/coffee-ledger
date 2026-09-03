@@ -1,6 +1,6 @@
 # Rencana D — Halaman Rak & Landing Portofolio
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Lots dan Catat lebur jadi satu halaman bernama Rak di mana daftar lot itu sendiri jadi antarmukanya, dan `/` berubah dari dashboard jadi halaman portofolio publik.
 
@@ -48,7 +48,7 @@
 
 Dikerjakan lebih dulu dan sendirian supaya app tetap utuh: `/` masih mengantar ke dashboard, cuma lewat satu lompatan.
 
-- [ ] **Step 1: Pindahkan filenya**
+- [x] **Step 1: Pindahkan filenya**
 
 ```bash
 cd web && mkdir -p "app/(app)/dashboard" && git mv "app/(app)/page.tsx" "app/(app)/dashboard/page.tsx"
@@ -56,7 +56,7 @@ cd web && mkdir -p "app/(app)/dashboard" && git mv "app/(app)/page.tsx" "app/(ap
 
 Sesuaikan impor relatif di dalamnya kalau ada yang menunjuk `./_dashboard/...` — sekarang harus `../_dashboard/...`.
 
-- [ ] **Step 2: `/` sementara mengantar ke dashboard**
+- [x] **Step 2: `/` sementara mengantar ke dashboard**
 
 Buat `web/app/page.tsx`:
 
@@ -70,11 +70,11 @@ export default function Home() {
 }
 ```
 
-- [ ] **Step 3: Nav menunjuk `/dashboard`**
+- [x] **Step 3: Nav menunjuk `/dashboard`**
 
 Di `web/app/(app)/layout.tsx`, ubah item nav Dashboard dari `href: "/"` menjadi `href: "/dashboard"`.
 
-- [ ] **Step 4: Verifikasi**
+- [x] **Step 4: Verifikasi**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `34 passed`, dan tabel rute memuat `/dashboard`.
@@ -82,7 +82,7 @@ Expected: bersih, `34 passed`, dan tabel rute memuat `/dashboard`.
 Dengan dev server jalan, tanpa sesi:
 `curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' http://localhost:3000/dashboard` → `307` ke `/login`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A web/
@@ -107,7 +107,7 @@ Dibangun **berdampingan** dengan `/lots` dan `/record` yang masih ada. Keduanya 
 
 Bentuknya: daftar lot **adalah** antarmukanya. Tidak ada dropdown "pilih lot", karena pengguna bertindak pada baris yang sedang dilihatnya.
 
-- [ ] **Step 1: Pindahkan dua komponen yang dipakai ulang**
+- [x] **Step 1: Pindahkan dua komponen yang dipakai ulang**
 
 ```bash
 cd web && mkdir -p "app/(app)/rak"
@@ -119,7 +119,7 @@ Perbaiki impor `../actions` di keduanya kalau kedalamannya berubah (tidak beruba
 
 `web/app/(app)/lots/page.tsx` masih mengimpornya; arahkan sementara ke lokasi baru supaya halaman lama tetap jalan sampai Task 3.
 
-- [ ] **Step 2: Buat `lot-row.tsx`**
+- [x] **Step 2: Buat `lot-row.tsx`**
 
 Client component. Props:
 
@@ -145,7 +145,7 @@ Isi satu baris:
 
 Tampilkan `state.error` di bawah form dengan `text-clay`, dan `state.success` dengan `text-teal`, mengikuti pola yang sudah dipakai `add-lot-form.tsx`.
 
-- [ ] **Step 3: Buat `rak/page.tsx`**
+- [x] **Step 3: Buat `rak/page.tsx`**
 
 Server Component. `await requireSession()` sebagai pernyataan pertama.
 
@@ -160,12 +160,12 @@ Alasannya frekuensi: transaksi dicatat hampir tiap hari, lot ditambah beberapa m
 
 Kalau belum ada lot sama sekali, jangan tampilkan daftar kosong; tampilkan ajakan singkat dan buka `<details>`-nya secara bawaan (`<details open>`).
 
-- [ ] **Step 4: Verifikasi**
+- [x] **Step 4: Verifikasi**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `34 passed`, tabel rute memuat `/rak` **dan** masih memuat `/lots` serta `/record`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A web/
@@ -192,7 +192,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 - Modify: `web/app/(app)/layout.tsx`
 - Delete: `web/app/(app)/lots/`, `web/app/(app)/record/`
 
-- [ ] **Step 1: Nav jadi tiga item**
+- [x] **Step 1: Nav jadi tiga item**
 
 Di `web/app/(app)/layout.tsx`:
 
@@ -204,23 +204,23 @@ const NAV = [
 ] as const;
 ```
 
-- [ ] **Step 2: Hapus halaman lama**
+- [x] **Step 2: Hapus halaman lama**
 
 ```bash
 cd web && git rm -r "app/(app)/lots" "app/(app)/record"
 ```
 
-- [ ] **Step 3: Pastikan tak ada rujukan tersisa**
+- [x] **Step 3: Pastikan tak ada rujukan tersisa**
 
 Run: `cd web && grep -rn '"/lots"\|"/record"\|/lots\b' app lib --include=*.tsx --include=*.ts`
 Expected: tidak ada hasil. Kalau ada (misalnya tautan di keadaan kosong dashboard), arahkan ke `/rak`.
 
-- [ ] **Step 4: Verifikasi**
+- [x] **Step 4: Verifikasi**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `34 passed`, tabel rute **tidak lagi** memuat `/lots` atau `/record`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A web/
@@ -241,7 +241,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 Landing butuh gambar sungguhan. `taste-skill` melarang keras membangun "screenshot palsu" dari `<div>`; kita tidak perlu, karena app-nya nyata dan bisa difoto.
 
-- [ ] **Step 1: Ambil screenshot dari app yang berjalan**
+- [x] **Step 1: Ambil screenshot dari app yang berjalan**
 
 Cetak cookie sesi seperti tugas sebelumnya di repo ini (`encode` dari `next-auth/jwt`, salt `authjs.session-token`, rahasia dari `../.env`), jalankan dev server, lalu dengan Playwright (`/Users/hilmi/anaconda3/bin/python`, viewport 1180x900, `device_scale_factor=2`) foto `/dashboard` dan `/rak`.
 
@@ -249,16 +249,16 @@ Simpan ke `web/public/app-dashboard.png` dan `web/public/app-rak.png`.
 
 Database berisi satu lot (`Gayo Wine Natural`, 500 g), jadi keduanya akan memperlihatkan data nyata, bukan keadaan kosong.
 
-- [ ] **Step 2: Lihat kedua gambar**
+- [x] **Step 2: Lihat kedua gambar**
 
 Buka keduanya dan pastikan layak dipamerkan: tidak terpotong, tidak ada overlay error dev, dashboard memperlihatkan bar dan peta.
 
-- [ ] **Step 3: Periksa ukurannya**
+- [x] **Step 3: Periksa ukurannya**
 
 Run: `ls -lh web/public/*.png`
 Kalau ada yang di atas 500 KB, ambil ulang dengan `device_scale_factor=1`. Ini gambar landing page, bukan cetakan.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add web/public
@@ -306,23 +306,23 @@ Isi, lima bagian:
 
 Gunakan `app-rak.png` di bagian 2 atau 3, mana yang lebih pas.
 
-- [ ] **Step 1: Tulis halamannya**
+- [x] **Step 1: Tulis halamannya**
 
 Ganti isi `web/app/page.tsx`. Pecah jadi komponen di `web/app/_landing/` kalau melebihi sekitar 150 baris; satu file besar sulit dibaca sekaligus.
 
 Halaman ini **publik**: jangan memanggil `requireSession()` dan jangan menyentuh database.
 
-- [ ] **Step 2: Verifikasi mekanis**
+- [x] **Step 2: Verifikasi mekanis**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `34 passed`. Di tabel rute, `/` harus **statis** (`○`), bukan dinamis, karena ia tidak membaca sesi maupun database.
 
-- [ ] **Step 3: Periksa larangan em-dash secara mekanis**
+- [x] **Step 3: Periksa larangan em-dash secara mekanis**
 
 Run: `cd web && grep -rn '—\|–' app/page.tsx app/_landing 2>/dev/null`
 Expected: tidak ada hasil. Kalau ada, tulis ulang kalimatnya; jangan cuma ganti karakternya dengan yang mirip.
 
-- [ ] **Step 4: Lihat dua keadaan**
+- [x] **Step 4: Lihat dua keadaan**
 
 Tanpa cookie sesi sama sekali:
 - `curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/` → `200`, bukan `307`. Ini yang membuktikan landing benar-benar publik.
@@ -332,7 +332,7 @@ Dengan Playwright (viewport 1180x900, `device_scale_factor=2`), foto `/` penuh k
 
 Foto juga pada lebar 390px dan laporkan apakah tata letaknya runtuh dengan benar jadi satu kolom.
 
-- [ ] **Step 5: Hapus berkas sementara dan commit**
+- [x] **Step 5: Hapus berkas sementara dan commit**
 
 ```bash
 git add -A web/
@@ -352,12 +352,12 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 ## Definisi selesai
 
-- [ ] `cd web && npx vitest run` → `34 passed`
-- [ ] `uv run pytest` → `22 passed` (tidak tersentuh)
-- [ ] `npx tsc --noEmit` bersih, `npx next build` sukses
-- [ ] Rute: `/` statis dan publik; `/dashboard`, `/rak`, `/history` di balik login
-- [ ] `/lots` dan `/record` tidak ada lagi, dan tidak ada rujukan tersisa
-- [ ] Nav tiga item: Dashboard, Rak, Riwayat
-- [ ] Rak: catat langsung di baris lot, tanpa dropdown pilih lot; tambah lot di `<details>` tertutup
-- [ ] Landing: nol em-dash, satu tema gelap, gambar screenshot asli, tanpa CTA pendaftaran
-- [ ] Tata letak landing runtuh benar di lebar 390px
+- [x] `cd web && npx vitest run` → `34 passed`
+- [x] `uv run pytest` → `22 passed` (tidak tersentuh)
+- [x] `npx tsc --noEmit` bersih, `npx next build` sukses
+- [x] Rute: `/` statis dan publik; `/dashboard`, `/rak`, `/history` di balik login
+- [x] `/lots` dan `/record` tidak ada lagi, dan tidak ada rujukan tersisa
+- [x] Nav tiga item: Dashboard, Rak, Riwayat
+- [x] Rak: catat langsung di baris lot, tanpa dropdown pilih lot; tambah lot di `<details>` tertutup
+- [x] Landing: nol em-dash, satu tema gelap, gambar screenshot asli, tanpa CTA pendaftaran
+- [x] Tata letak landing runtuh benar di lebar 390px
