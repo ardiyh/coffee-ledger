@@ -10,7 +10,6 @@ import {
   recordBrew,
   recordGift,
   recordAdjust,
-  finishLot,
   updateLot,
 } from "@/lib/ledger/service";
 
@@ -125,28 +124,6 @@ export async function recordAction(
   }
 
   // Fresh numbers on Rak's rows, history, and the dashboard.
-  revalidatePath("/rak");
-  revalidatePath("/history");
-  revalidatePath("/dashboard");
-  return { success: true };
-}
-
-export async function finishLotAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  await requireSession();
-
-  const lotId = Number(formData.get("lotId"));
-  if (!Number.isFinite(lotId) || lotId <= 0) return { error: "Lot gak dikenal." };
-
-  try {
-    await finishLot(db, lotId);
-  } catch (err) {
-    if (err instanceof LedgerError) return { error: err.message };
-    throw err;
-  }
-
   revalidatePath("/rak");
   revalidatePath("/history");
   revalidatePath("/dashboard");

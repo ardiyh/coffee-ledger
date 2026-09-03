@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useEffect, useState } from "react";
 import { recordAction, type ActionState } from "../actions";
 import { daysSince, formatGrams } from "@/lib/format";
-import { FinishLotButton } from "./finish-lot-button";
+import { EditLotForm } from "./edit-lot-form";
 
 const initialActionState: ActionState = {};
 
@@ -19,6 +19,12 @@ const ACTION_OPTIONS = [
   { value: "ADJUST_OUT", label: "Koreksi turun" },
 ] as const;
 
+interface LotSuggestions {
+  origins: string[];
+  varietals: string[];
+  processMethods: string[];
+}
+
 export interface LotRowProps {
   lotId: number;
   name: string;
@@ -26,7 +32,9 @@ export interface LotRowProps {
   varietal: string;
   processMethod: string | null;
   roastDate: string;
+  notes: string | null;
   stock: number;
+  suggestions: LotSuggestions;
 }
 
 export function LotRow({
@@ -36,13 +44,16 @@ export function LotRow({
   varietal,
   processMethod,
   roastDate,
+  notes,
   stock,
+  suggestions,
 }: LotRowProps) {
   const [state, formAction, pending] = useActionState(
     recordAction,
     initialActionState,
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (state.success) {
@@ -52,28 +63,38 @@ export function LotRow({
 
   return (
     <div className="rounded-lg border border-line bg-panel p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-body text-base text-ink">{name}</p>
-          <p className="mt-1 font-body text-xs text-ink-faint">
-            {origin} · {varietal} · {processMethod ?? "proses tidak dicatat"}
-            {" · "}
-            {daysSince(roastDate)} hari sejak roast
-          </p>
+      {editing ? (
+        <EditLotForm
+          lotId={lotId}
+          initial={{ name, origin, varietal, processMethod, roastDate, notes }}
+          suggestions={suggestions}
+          onCancel={() => setEditing(false)}
+          onSaved={() => setEditing(false)}
+        />
+      ) : (
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-body text-base text-ink">{name}</p>
+            <p className="mt-1 font-body text-xs text-ink-faint">
+              {origin} · {varietal} · {processMethod ?? "proses tidak dicatat"}
+              {" · "}
+              {daysSince(roastDate)} hari sejak roast
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="font-mono text-lg tabular-nums text-ink">
+              {formatGrams(stock)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
+            >
+              Edit
+            </button>
+          </div>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="font-mono text-lg tabular-nums text-ink">
-            {formatGrams(stock)}
-          </span>
-          {stock > 0 ? (
-            <FinishLotButton
-              lotId={lotId}
-              lotName={name}
-              grams={formatGrams(stock)}
-            />
-          ) : null}
-        </div>
-      </div>
+      )}
 
       <form
         ref={formRef}

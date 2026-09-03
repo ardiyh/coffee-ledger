@@ -60,7 +60,9 @@ export default async function RakPage() {
               varietal={lot.varietal}
               processMethod={lot.processMethod}
               roastDate={lot.roastDate}
+              notes={lot.notes}
               stock={stock}
+              suggestions={suggestions}
             />
           ))}
         </section>
