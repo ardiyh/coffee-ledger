@@ -38,8 +38,18 @@ export function OriginMap({
       </h2>
       <svg
         viewBox={`0 0 ${MAP_SIZE.width} ${MAP_SIZE.height}`}
-        className="w-full h-auto"
+        className="w-full h-auto rounded-md"
       >
+        {/*
+          Laut diberi latar --ground sendiri, bukan mewarisi --panel milik
+          kartunya. Daratan --panel-2 di atas panel --panel beda terlalu tipis
+          untuk terbaca; di atas --ground perbedaannya cukup.
+        */}
+        <rect
+          width={MAP_SIZE.width}
+          height={MAP_SIZE.height}
+          fill="var(--ground)"
+        />
         <path
           d={indonesiaPath()}
           fill="var(--panel-2)"
