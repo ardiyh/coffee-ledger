@@ -1,6 +1,6 @@
 # Rencana E — Nama Lot Tersusun dari Bagiannya
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Nama lot berhenti diketik ulang dari informasi yang sudah ada di kolom lain, dan tersusun sendiri dari Origin, Proses, dan satu kata khusus opsional.
 
@@ -48,7 +48,7 @@ Gayo, Aceh + "Single Var Typica" + Darkroom Natural Anaerob 48H
 - Modify: `web/lib/format.ts`
 - Modify: `web/lib/ledger/ledger.test.ts`
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 Tambahkan `describe` baru di `web/lib/ledger/ledger.test.ts`, impor `composeLotName` dari `"../format"` di samping `daysSince` yang sudah diimpor dari sana:
 
@@ -81,12 +81,12 @@ describe("composeLotName", () => {
 
 Test terakhir penting: form menyusun nama **sambil kamu mengetik**, jadi fungsinya harus menangani keadaan setengah terisi tanpa melempar error atau meninggalkan spasi ganda.
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `composeLotName is not a function`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Tambahkan ke `web/lib/format.ts`:
 
@@ -119,12 +119,12 @@ export function composeLotName(
 }
 ```
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `38 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/format.ts web/lib/ledger/ledger.test.ts
@@ -149,7 +149,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 Form tambah lot ada di dalam `<details>` pada halaman Rak. Ia sudah client component dan memakai `useActionState`.
 
-- [ ] **Step 1: Susun ulang urutan kolomnya**
+- [x] **Step 1: Susun ulang urutan kolomnya**
 
 Urutan baru, dan alasannya sebab mendahului akibat: kolom yang menyusun nama diletakkan lebih dulu, kolom Nama menyusul sebagai hasilnya.
 
@@ -174,7 +174,7 @@ Kolom Kata khusus baru:
 
 `name="special"` **tidak dibaca Server Action** dan tidak disimpan. Ia cuma bahan penyusun; hasilnya sudah ada di `name`.
 
-- [ ] **Step 2: Isi kolom Nama secara otomatis**
+- [x] **Step 2: Isi kolom Nama secara otomatis**
 
 Simpan nilai ketiga kolom penyusun di state, dan turunkan nilai Nama darinya. Kolom Nama tetap `<input>` biasa yang bisa diedit.
 
@@ -197,12 +197,12 @@ Setelah submit berhasil (`state.success`, di `useEffect` yang sudah ada dan mema
 
 Beri kolom Nama satu baris bantuan kecil `text-ink-faint`: `Terisi otomatis dari Origin, Kata khusus, dan Proses. Boleh diubah.`
 
-- [ ] **Step 3: Verifikasi mekanis**
+- [x] **Step 3: Verifikasi mekanis**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `38 passed`, build sukses.
 
-- [ ] **Step 4: Buktikan perilakunya di browser**
+- [x] **Step 4: Buktikan perilakunya di browser**
 
 Cetak cookie sesi seperti tugas sebelumnya di repo ini (`encode` dari `next-auth/jwt`, salt `authjs.session-token`, rahasia dari `../.env`), lalu dengan Playwright (`/Users/hilmi/anaconda3/bin/python`, viewport 1180x900, `device_scale_factor=2`).
 
@@ -219,7 +219,7 @@ Ambil screenshot form yang terisi (langkah 2, sebelum dikirim) dan halaman Rak s
 
 Halaman punya beberapa tombol submit termasuk logout di header; batasi selectormu atau kamu akan keluar dari sesi alih-alih menyimpan.
 
-- [ ] **Step 5: Bersihkan dan commit**
+- [x] **Step 5: Bersihkan dan commit**
 
 Hapus skrip sementara dan berkas token; `git status` harus bersih.
 
@@ -241,10 +241,10 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 ## Definisi selesai
 
-- [ ] `cd web && npx vitest run` → `38 passed`
-- [ ] `uv run pytest` → `22 passed` (tidak tersentuh)
-- [ ] `npx tsc --noEmit` bersih, `npx next build` sukses
-- [ ] Nama terisi sendiri dari Origin, Kata khusus, dan Proses
-- [ ] Setelah kolom Nama diketik manual, mengubah Proses **tidak** menimpanya
-- [ ] Setelah submit berhasil, form kembali kosong dan pengisian otomatis hidup lagi
-- [ ] Tidak ada perubahan schema; `special` tidak pernah masuk database
+- [x] `cd web && npx vitest run` → `38 passed`
+- [x] `uv run pytest` → `22 passed` (tidak tersentuh)
+- [x] `npx tsc --noEmit` bersih, `npx next build` sukses
+- [x] Nama terisi sendiri dari Origin, Kata khusus, dan Proses
+- [x] Setelah kolom Nama diketik manual, mengubah Proses **tidak** menimpanya
+- [x] Setelah submit berhasil, form kembali kosong dan pengisian otomatis hidup lagi
+- [x] Tidak ada perubahan schema; `special` tidak pernah masuk database
