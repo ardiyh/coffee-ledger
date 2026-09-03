@@ -39,11 +39,14 @@ export async function addLotAction(
   const name = String(formData.get("name") ?? "").trim();
   const origin = String(formData.get("origin") ?? "").trim();
   const varietal = String(formData.get("varietal") ?? "").trim();
+  const processMethod = String(formData.get("processMethod") ?? "").trim();
   const roastDate = String(formData.get("roastDate") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (!name || !origin || !varietal || !roastDate) {
-    return { error: "Nama, origin, varietal, dan tanggal roast wajib diisi." };
+  if (!name || !origin || !varietal || !processMethod || !roastDate) {
+    return {
+      error: "Nama, origin, varietal, proses, dan tanggal roast wajib diisi.",
+    };
   }
 
   const initialGramsRaw = String(formData.get("initialGrams") ?? "").trim();
@@ -56,7 +59,7 @@ export async function addLotAction(
   try {
     await addLotWithInitialStock(
       db,
-      { name, origin, varietal, roastDate, notes: notes || null },
+      { name, origin, varietal, processMethod, roastDate, notes: notes || null },
       initialGrams,
     );
   } catch (err) {

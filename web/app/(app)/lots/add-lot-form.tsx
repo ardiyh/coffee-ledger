@@ -2,7 +2,6 @@
 
 import { useActionState, useRef, useEffect } from "react";
 import { addLotAction, type ActionState } from "../actions";
-import { COFFEE_REGIONS } from "@/lib/regions";
 
 const initialActionState: ActionState = {};
 
@@ -10,7 +9,19 @@ const inputClass =
   "w-full rounded-md border border-line bg-panel-2 px-3 py-2 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
 
-export function AddLotForm({ todayISO }: { todayISO: string }) {
+interface LotSuggestions {
+  origins: string[];
+  varietals: string[];
+  processMethods: string[];
+}
+
+export function AddLotForm({
+  todayISO,
+  suggestions,
+}: {
+  todayISO: string;
+  suggestions: LotSuggestions;
+}) {
   const [state, formAction, pending] = useActionState(
     addLotAction,
     initialActionState,
@@ -51,8 +62,8 @@ export function AddLotForm({ todayISO }: { todayISO: string }) {
           placeholder="Kerinci, Jambi"
         />
         <datalist id="coffee-regions">
-          {COFFEE_REGIONS.map((r) => (
-            <option key={r.name} value={r.name} />
+          {suggestions.origins.map((o) => (
+            <option key={o} value={o} />
           ))}
         </datalist>
       </label>
@@ -63,9 +74,32 @@ export function AddLotForm({ todayISO }: { todayISO: string }) {
           name="varietal"
           type="text"
           required
+          list="varietals"
           className={inputClass}
           placeholder="Gayo 1"
         />
+        <datalist id="varietals">
+          {suggestions.varietals.map((v) => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Proses pasca panen</span>
+        <input
+          name="processMethod"
+          type="text"
+          required
+          list="process-methods"
+          className={inputClass}
+          placeholder="Giling Basah"
+        />
+        <datalist id="process-methods">
+          {suggestions.processMethods.map((p) => (
+            <option key={p} value={p} />
+          ))}
+        </datalist>
       </label>
 
       <label className="flex flex-col gap-1">
