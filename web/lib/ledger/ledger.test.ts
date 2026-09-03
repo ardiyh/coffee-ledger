@@ -297,6 +297,78 @@ describe("addLotWithInitialStock", () => {
   });
 });
 
+describe("outflowByReason", () => {
+  it("hanya menghitung transaksi OUT, ACQUIRE diabaikan", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 1000);
+    await service.recordBrew(db, lot.id, 60);
+    await service.recordGift(db, lot.id, 240);
+
+    const rows = await service.outflowByReason(db);
+
+    expect(rows).toEqual([
+      { reason: "GIFT", grams: 240 },
+      { reason: "BREW", grams: 60 },
+    ]);
+  });
+
+  it("urut menurun berdasarkan gram", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 500);
+    await service.recordBrew(db, lot.id, 100);
+    await service.recordGift(db, lot.id, 50);
+    await service.recordAdjust(db, lot.id, 200, "OUT");
+
+    expect((await service.outflowByReason(db)).map((r) => r.reason)).toEqual([
+      "ADJUST",
+      "BREW",
+      "GIFT",
+    ]);
+  });
+
+  it("database kosong menghasilkan array kosong", async () => {
+    expect(await service.outflowByReason(await freshDb())).toEqual([]);
+  });
+});
+
+describe("giftsByRecipient", () => {
+  it("mengelompokkan catatan GIFT, tidak peka spasi dan besar-kecil huruf", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 1000);
+    await service.recordGift(db, lot.id, 100, "Hapis");
+    await service.recordGift(db, lot.id, 50, " hapis ");
+    await service.recordGift(db, lot.id, 80, "Grey");
+
+    expect(await service.giftsByRecipient(db)).toEqual([
+      { recipient: "Hapis", grams: 150 },
+      { recipient: "Grey", grams: 80 },
+    ]);
+  });
+
+  it("catatan kosong masuk kelompok tanpa catatan", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 200);
+    await service.recordGift(db, lot.id, 30);
+
+    expect(await service.giftsByRecipient(db)).toEqual([
+      { recipient: "(tanpa catatan)", grams: 30 },
+    ]);
+  });
+
+  it("BREW dan ACQUIRE tidak ikut terhitung", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 500, "beli");
+    await service.recordBrew(db, lot.id, 20, "V60");
+
+    expect(await service.giftsByRecipient(db)).toEqual([]);
+  });
+});
+
 describe("daysSince", () => {
   it("menghitung selisih hari kalender", () => {
     expect(daysSince("2026-06-18", new Date("2026-09-03T00:00:00+07:00"))).toBe(77);
