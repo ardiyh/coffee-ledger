@@ -23,14 +23,28 @@ import type {
 } from "./repository";
 import { transaction } from "./schema";
 
-export async function addLot(
-  db: LedgerDb,
-  args: { name: string; origin: string; varietal: string; roastDate: string; notes?: string | null },
-): Promise<Lot> {
+export interface NewLotArgs {
+  name: string;
+  origin: string;
+  varietal: string;
+  roastDate: string;
+  /**
+   * Proses pasca panen: Natural, Washed, Giling Basah, dan seterusnya.
+   *
+   * Opsional di sini walaupun form mewajibkannya. Database mengizinkan null
+   * supaya data yang masuk lewat jalur lain (impor, skrip) tidak perlu
+   * mengarang nilai untuk sesuatu yang memang tidak diketahui.
+   */
+  processMethod?: string | null;
+  notes?: string | null;
+}
+
+export async function addLot(db: LedgerDb, args: NewLotArgs): Promise<Lot> {
   const newLot: NewLot = {
     name: args.name,
     origin: args.origin,
     varietal: args.varietal,
+    processMethod: args.processMethod ?? null,
     roastDate: args.roastDate,
     notes: args.notes ?? null,
   };
@@ -49,7 +63,7 @@ export async function addLot(
  */
 export async function addLotWithInitialStock(
   db: LedgerDb,
-  args: { name: string; origin: string; varietal: string; roastDate: string; notes?: string | null },
+  args: NewLotArgs,
   initialGrams?: number,
 ): Promise<Lot> {
   const lot = await addLot(db, args);

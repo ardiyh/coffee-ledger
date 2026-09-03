@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,33 +18,37 @@ import * as service from "./service";
 import { daysSince } from "../format";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DDL_PATH = path.resolve(__dirname, "../../drizzle/0000_simple_madame_masque.sql");
+const DRIZZLE_DIR = path.resolve(__dirname, "../../drizzle");
 
 /**
  * A fresh, empty PGlite database per test — mirrors the Python conftest.py
- * fixture that builds a new in-memory SQLite db per test. Schema comes from
- * the drizzle-kit-generated DDL (drizzle/0000_simple_madame_masque.sql), not
- * hand-written CREATE TABLEs, so there's one source of truth for the shape.
- * That file is wrapped in a /* ... *\/ block (introspect output, so it can't
- * accidentally be replayed against the real database) — strip the wrapper,
- * split on the statement-breakpoint markers, and run each statement.
+ * fixture that built a new in-memory SQLite db per test.
+ *
+ * Schema comes from the drizzle-kit-generated migration files under drizzle/,
+ * applied in filename order, so there is one source of truth for the shape and
+ * a test can never drift from what the real database actually has.
  */
 async function freshDb(): Promise<LedgerDb> {
   const client = new PGlite();
   const db: LedgerDb = drizzle(client, { schema: { ...schema, ...relations } });
 
-  const raw = readFileSync(DDL_PATH, "utf-8");
-  const match = raw.match(/\/\*([\s\S]*)\*\//);
-  if (!match) {
-    throw new Error(`Expected ${DDL_PATH} to contain a /* ... */ wrapped block`);
+  const migrations = readdirSync(DRIZZLE_DIR)
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+  if (migrations.length === 0) {
+    throw new Error(`No .sql migrations found in ${DRIZZLE_DIR}`);
   }
-  const statements = match[1]
-    .split("--> statement-breakpoint")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  for (const statement of statements) {
-    await client.exec(statement);
+
+  for (const file of migrations) {
+    const statements = readFileSync(path.resolve(DRIZZLE_DIR, file), "utf-8")
+      .split("--> statement-breakpoint")
+      .map((stmt) => stmt.trim())
+      .filter(Boolean);
+    for (const statement of statements) {
+      await client.exec(statement);
+    }
   }
+
   return db;
 }
 
@@ -294,6 +298,31 @@ describe("addLotWithInitialStock", () => {
     const lots = await service.listLots(db);
     expect(lots.length).toBe(1);
     expect(await service.currentStock(db, lots[0].id)).toBe(0);
+  });
+});
+
+describe("processMethod", () => {
+  const args = {
+    name: "Gayo Wine",
+    origin: "Gayo, Aceh",
+    varietal: "Typica",
+    roastDate: "2026-09-01",
+  };
+
+  it("tersimpan waktu diberikan", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, { ...args, processMethod: "Giling Basah" });
+
+    const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
+    expect(stored?.processMethod).toBe("Giling Basah");
+  });
+
+  it("null waktu tidak diberikan", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, args);
+
+    const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
+    expect(stored?.processMethod).toBeNull();
   });
 });
 

@@ -27,6 +27,7 @@ export const lot = pgTable("lot", {
 	name: varchar().notNull(),
 	origin: varchar().notNull(),
 	varietal: varchar().notNull(),
+	processMethod: varchar("process_method"),
 	roastDate: date("roast_date").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
 	notes: varchar(),

@@ -1,9 +1,70 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
+  "id": "868ac534-ac1a-42d8-abbb-1b0d44a862a7",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.lot": {
+      "name": "lot",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "varietal": {
+          "name": "varietal",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_method": {
+          "name": "process_method",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roast_date": {
+          "name": "roast_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.transaction": {
       "name": "transaction",
       "schema": "",
@@ -59,10 +120,10 @@
           "columns": [
             {
               "expression": "lot_id",
+              "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "int4_ops",
-              "isExpression": false
+              "opclass": "int4_ops"
             }
           ],
           "isUnique": false,
@@ -76,7 +137,6 @@
           "name": "transaction_lot_id_fkey",
           "tableFrom": "transaction",
           "tableTo": "lot",
-          "schemaTo": "public",
           "columnsFrom": [
             "lot_id"
           ],
@@ -89,84 +149,29 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {},
       "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.lot": {
-      "name": "lot",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "origin": {
-          "name": "origin",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "varietal": {
-          "name": "varietal",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "roast_date": {
-          "name": "roast_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "checkConstraints": {},
-      "policies": {},
       "isRLSEnabled": false
     }
   },
   "enums": {
     "public.txnkind": {
       "name": "txnkind",
+      "schema": "public",
       "values": [
         "IN",
         "OUT"
-      ],
-      "schema": "public"
+      ]
     },
     "public.txnreason": {
       "name": "txnreason",
+      "schema": "public",
       "values": [
         "ACQUIRE",
         "BREW",
         "GIFT",
         "ADJUST"
-      ],
-      "schema": "public"
+      ]
     }
   },
   "schemas": {},
@@ -175,11 +180,8 @@
   "policies": {},
   "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
     "tables": {}
   }
 }
