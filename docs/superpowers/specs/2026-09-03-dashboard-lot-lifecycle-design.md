@@ -211,3 +211,40 @@ dashboard yang diperkaya di B hanya kelihatan setelah ada lot aktif untuk ditamp
   konsisten. Diterima untuk sekarang.
 - **Menghapus Streamlit tidak bisa dibatalkan dengan mudah** selain lewat riwayat git.
   Dilakukan setelah pemilik projek memakai app Next.js dan puas.
+
+---
+
+## Rencana selanjutnya (diputuskan 2026-09-03, belum ditulis rencananya)
+
+Dua perubahan routing yang **harus ditulis dalam satu rencana**, karena keduanya menulis
+ulang nav yang sama; mengerjakannya terpisah berarti menyentuh nav dua kali.
+
+### D1. Halaman "Rak" — gabungan Lots + Catat
+
+`/lots` dan `/record` jadi satu halaman bernama **Rak**. Nav turun jadi
+**Dashboard · Rak · Riwayat**.
+
+Bukan sekadar menempelkan dua form. Bentuknya: **daftar lot itu sendiri jadi antarmukanya** —
+tiap baris menampilkan stoknya, dan pencatatan dilakukan di baris itu juga. Dropdown "pilih
+lot" hilang, karena pengguna bertindak pada baris yang sedang dilihatnya.
+
+Tambah lot turun jadi tindakan sekunder. Alasannya frekuensi: lot ditambah beberapa minggu
+sekali, transaksi dicatat hampir tiap hari, jadi menaruh form tambah lot di atas form catat
+adalah hierarki terbalik.
+
+### D2. Landing page sebagai portofolio, bukan halaman produk
+
+Halaman publik di `/`, dashboard pindah ke rute lain.
+
+Penting: app ini punya allowlist **satu email**, jadi tidak ada yang bisa mendaftar. Landing
+page bergaya produk ("coba gratis", "daftar sekarang") akan berbohong. Yang dibangun adalah
+**portofolio**: menceritakan pola ledger di mana stok tidak pernah disimpan, perpindahan
+Streamlit ke Next.js, dan kenapa palet IN/OUT harus lolos uji buta warna. Tombol Masuk cukup
+di pojok.
+
+`taste-skill` **tepat dipakai di sini**, kebalikan dari dashboard yang skill itu tolak
+sendiri: landing page dan portofolio persis yang ia rancang.
+
+**Urutan:** Rencana C dikerjakan lebih dulu. Menggabung Lots dan Catat berarti menulis ulang
+form tambah lot, dan Rencana C juga menyentuh form yang sama; berurutan menghindari
+menulisnya dua kali.
