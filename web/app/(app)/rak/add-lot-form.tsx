@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useState, useEffect } from "react";
 import { addLotAction, type ActionState } from "../actions";
+import { composeLotName } from "@/lib/format";
 
 const initialActionState: ActionState = {};
 
@@ -28,9 +29,23 @@ export function AddLotForm({
   );
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [origin, setOrigin] = useState("");
+  const [processMethod, setProcessMethod] = useState("");
+  const [special, setSpecial] = useState("");
+  const [name, setName] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
+
+  const composed = composeLotName(origin, processMethod, special);
+  const nameValue = nameTouched ? name : composed;
+
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
+      setOrigin("");
+      setProcessMethod("");
+      setSpecial("");
+      setName("");
+      setNameTouched(false);
     }
   }, [state.success]);
 
@@ -41,17 +56,6 @@ export function AddLotForm({
       className="grid grid-cols-1 gap-4 sm:grid-cols-2"
     >
       <label className="flex flex-col gap-1">
-        <span className={labelClass}>Nama</span>
-        <input
-          name="name"
-          type="text"
-          required
-          className={inputClass}
-          placeholder="Gayo Wine Natural"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1">
         <span className={labelClass}>Origin</span>
         <input
           name="origin"
@@ -60,6 +64,8 @@ export function AddLotForm({
           list="coffee-regions"
           className={inputClass}
           placeholder="Kerinci, Jambi"
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
         />
         <datalist id="coffee-regions">
           {suggestions.origins.map((o) => (
@@ -94,12 +100,45 @@ export function AddLotForm({
           list="process-methods"
           className={inputClass}
           placeholder="Giling Basah"
+          value={processMethod}
+          onChange={(e) => setProcessMethod(e.target.value)}
         />
         <datalist id="process-methods">
           {suggestions.processMethods.map((p) => (
             <option key={p} value={p} />
           ))}
         </datalist>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Kata khusus (opsional)</span>
+        <input
+          name="special"
+          type="text"
+          className={inputClass}
+          placeholder="Single Var Typica"
+          value={special}
+          onChange={(e) => setSpecial(e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Nama</span>
+        <input
+          name="name"
+          type="text"
+          required
+          className={inputClass}
+          placeholder="Gayo Wine Natural"
+          value={nameValue}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameTouched(true);
+          }}
+        />
+        <span className="font-body text-xs text-ink-faint">
+          Terisi otomatis dari Origin, Kata khusus, dan Proses. Boleh diubah.
+        </span>
       </label>
 
       <label className="flex flex-col gap-1">
