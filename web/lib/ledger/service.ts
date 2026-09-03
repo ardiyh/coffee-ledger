@@ -175,6 +175,20 @@ export async function stockSummary(db: LedgerDb): Promise<LotStock[]> {
   return repo.stockSummary(db);
 }
 
+export type LotValueSuggestions = repo.LotValueSuggestions;
+
+/**
+ * Nilai yang pernah dipakai di kolom teks bebas, yang paling sering di depan.
+ *
+ * Dipakai untuk mengisi `<datalist>` di form tambah lot. Tujuannya bukan cuma
+ * mempercepat ketik: menawarkan ejaan yang sudah pernah dipakai menekan
+ * penulisan tidak konsisten di sumbernya, yang kalau dibiarkan akan memecah
+ * satu varietal jadi dua di analisa nanti.
+ */
+export async function distinctLotValues(db: LedgerDb): Promise<repo.LotValueSuggestions> {
+  return repo.distinctLotValues(db);
+}
+
 export type OutflowRow = repo.OutflowRow;
 export type RecipientRow = repo.RecipientRow;
 

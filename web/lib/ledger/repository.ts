@@ -168,6 +168,38 @@ export async function stockSummary(db: LedgerDb): Promise<LotStock[]> {
   return rows.map((r) => ({ lot: mapLot(r.lot), stock: Number(r.stock) }));
 }
 
+export interface LotValueSuggestions {
+  origins: string[];
+  varietals: string[];
+  processMethods: string[];
+}
+
+/** Nilai origin/varietal/processMethod yang pernah dipakai, paling sering di depan. */
+export async function distinctLotValues(db: LedgerDb): Promise<LotValueSuggestions> {
+  const rows = await db
+    .select({
+      origin: lot.origin,
+      varietal: lot.varietal,
+      processMethod: lot.processMethod,
+    })
+    .from(lot);
+
+  const rank = (values: (string | null)[]) => {
+    const count = new Map<string, number>();
+    for (const v of values) {
+      const s = (v ?? "").trim();
+      if (s) count.set(s, (count.get(s) ?? 0) + 1);
+    }
+    return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
+  };
+
+  return {
+    origins: rank(rows.map((r) => r.origin)),
+    varietals: rank(rows.map((r) => r.varietal)),
+    processMethods: rank(rows.map((r) => r.processMethod)),
+  };
+}
+
 export interface OutflowRow { reason: TxnReason; grams: number; }
 export interface RecipientRow { recipient: string; grams: number; }
 

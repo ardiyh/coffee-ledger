@@ -398,6 +398,35 @@ describe("giftsByRecipient", () => {
   });
 });
 
+describe("distinctLotValues", () => {
+  const base = { name: "x", origin: "Gayo, Aceh", varietal: "Typica", roastDate: "2026-09-01" };
+
+  it("mengembalikan nilai unik, yang paling sering di depan", async () => {
+    const db = await freshDb();
+    await service.addLot(db, { ...base, varietal: "Typica" });
+    await service.addLot(db, { ...base, varietal: "Ateng" });
+    await service.addLot(db, { ...base, varietal: "Typica" });
+
+    const v = await service.distinctLotValues(db);
+    expect(v.varietals).toEqual(["Typica", "Ateng"]);
+    expect(v.origins).toEqual(["Gayo, Aceh"]);
+  });
+
+  it("melewati processMethod yang null", async () => {
+    const db = await freshDb();
+    await service.addLot(db, base);
+    await service.addLot(db, { ...base, processMethod: "Giling Basah" });
+
+    expect((await service.distinctLotValues(db)).processMethods).toEqual(["Giling Basah"]);
+  });
+
+  it("database kosong menghasilkan tiga array kosong", async () => {
+    expect(await service.distinctLotValues(await freshDb())).toEqual({
+      origins: [], varietals: [], processMethods: [],
+    });
+  });
+});
+
 describe("daysSince", () => {
   it("menghitung selisih hari kalender", () => {
     expect(daysSince("2026-06-18", new Date("2026-09-03T00:00:00+07:00"))).toBe(77);
