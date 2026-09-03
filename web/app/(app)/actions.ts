@@ -11,6 +11,7 @@ import {
   recordGift,
   recordAdjust,
   finishLot,
+  updateLot,
 } from "@/lib/ledger/service";
 
 /**
@@ -146,6 +147,51 @@ export async function finishLotAction(
     throw err;
   }
 
+  revalidatePath("/rak");
+  revalidatePath("/history");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function editLotAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  // Real auth boundary for this action — see addLotAction above.
+  await requireSession();
+
+  const lotId = Number(formData.get("lotId"));
+  const name = String(formData.get("name") ?? "").trim();
+  const origin = String(formData.get("origin") ?? "").trim();
+  const varietal = String(formData.get("varietal") ?? "").trim();
+  const processMethod = String(formData.get("processMethod") ?? "").trim();
+  const roastDate = String(formData.get("roastDate") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  if (!Number.isFinite(lotId) || lotId <= 0) {
+    return { error: "Lot gak dikenal." };
+  }
+  if (!name || !origin || !varietal || !processMethod || !roastDate) {
+    return {
+      error: "Nama, origin, varietal, proses, dan tanggal roast wajib diisi.",
+    };
+  }
+
+  try {
+    await updateLot(db, lotId, {
+      name,
+      origin,
+      varietal,
+      processMethod,
+      roastDate,
+      notes: notes || null,
+    });
+  } catch (err) {
+    if (err instanceof LedgerError) return { error: err.message };
+    throw err;
+  }
+
+  // Fresh numbers/names on Rak's rows, history, and the dashboard.
   revalidatePath("/rak");
   revalidatePath("/history");
   revalidatePath("/dashboard");
