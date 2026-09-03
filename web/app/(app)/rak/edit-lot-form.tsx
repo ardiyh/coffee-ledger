@@ -2,18 +2,13 @@
 
 import { useActionState } from "react";
 import { editLotAction, type ActionState } from "../actions";
+import type { LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
 
 const inputClass =
   "w-full rounded-md border border-line bg-panel-2 px-3 py-2 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
-
-interface LotSuggestions {
-  origins: string[];
-  varietals: string[];
-  processMethods: string[];
-}
 
 export interface EditLotFormProps {
   lotId: number;

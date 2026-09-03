@@ -4,6 +4,7 @@ import { useActionState, useRef, useEffect, useState } from "react";
 import { recordAction, type ActionState } from "../actions";
 import { daysSince, formatGrams } from "@/lib/format";
 import { EditLotForm } from "./edit-lot-form";
+import type { LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
 
@@ -18,12 +19,6 @@ const ACTION_OPTIONS = [
   { value: "ADJUST_IN", label: "Koreksi naik" },
   { value: "ADJUST_OUT", label: "Koreksi turun" },
 ] as const;
-
-interface LotSuggestions {
-  origins: string[];
-  varietals: string[];
-  processMethods: string[];
-}
 
 export interface LotRowProps {
   lotId: number;

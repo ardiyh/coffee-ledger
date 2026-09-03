@@ -3,18 +3,13 @@
 import { useActionState, useRef, useState } from "react";
 import { addLotAction, type ActionState } from "../actions";
 import { composeLotName } from "@/lib/format";
+import type { LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
 
 const inputClass =
   "w-full rounded-md border border-line bg-panel-2 px-3 py-2 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
-
-interface LotSuggestions {
-  origins: string[];
-  varietals: string[];
-  processMethods: string[];
-}
 
 export function AddLotForm({
   todayISO,
