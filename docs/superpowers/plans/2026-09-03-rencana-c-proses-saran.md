@@ -1,6 +1,6 @@
 # Rencana C — Kolom Proses Pasca Panen & Saran Isian
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Proses pasca panen berhenti tersembunyi di dalam nama lot dan jadi kolom sendiri, dan tiga kolom teks bebas dapat saran isian yang tumbuh dari data yang benar-benar dipakai.
 
@@ -47,7 +47,7 @@
 
 Sejak Streamlit pensiun, **Drizzle memiliki schema**, jadi alurnya sekarang: sunting `schema.ts`, `generate`, lalu `migrate`. Ini pertama kalinya alur itu dipakai di projek ini.
 
-- [ ] **Step 1: Tambahkan kolom ke `schema.ts`**
+- [x] **Step 1: Tambahkan kolom ke `schema.ts`**
 
 Di `web/lib/ledger/schema.ts`, di dalam `pgTable("lot", {...})`, sisipkan setelah `varietal`:
 
@@ -57,25 +57,25 @@ Di `web/lib/ledger/schema.ts`, di dalam `pgTable("lot", {...})`, sisipkan setela
 
 Tanpa `.notNull()`. Nullable disengaja; lihat tabel Keputusan di atas.
 
-- [ ] **Step 2: Generate migrasinya**
+- [x] **Step 2: Generate migrasinya**
 
 Run: `cd web && npx drizzle-kit generate`
 Expected: file baru `drizzle/0001_*.sql`.
 
-- [ ] **Step 3: BACA file SQL yang dihasilkan sebelum menjalankannya**
+- [x] **Step 3: BACA file SQL yang dihasilkan sebelum menjalankannya**
 
 Run: `cd web && cat drizzle/0001_*.sql`
 Expected: satu pernyataan, kira-kira `ALTER TABLE "lot" ADD COLUMN "process_method" varchar;`
 
 **Kalau file itu berisi `CREATE TABLE`, `DROP`, atau apa pun selain satu `ADD COLUMN`, BERHENTI dan laporkan.** Itu berarti Drizzle mengira schema-nya berbeda jauh dari isi database, dan menjalankannya bisa merusak.
 
-- [ ] **Step 4: Jalankan migrasinya**
+- [x] **Step 4: Jalankan migrasinya**
 
 Run: `cd web && npx drizzle-kit migrate`
 
 Catatan: `drizzle/0000_*.sql` adalah baseline hasil introspect dan **seluruh isinya dibungkus komentar `/* */`**, jadi menjalankannya tidak melakukan apa-apa. Drizzle akan mencatatnya sebagai sudah diterapkan lalu lanjut ke 0001. Kalau langkah ini gagal karena 0000, laporkan pesannya; jangan mengakalinya dengan `drizzle-kit push`.
 
-- [ ] **Step 5: Verifikasi kolomnya benar-benar ada**
+- [x] **Step 5: Verifikasi kolomnya benar-benar ada**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData && uv run python - <<'PY'
@@ -92,7 +92,7 @@ PY
 
 Expected: `process_method character varying nullable=YES` muncul dalam daftar.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/lib/ledger/schema.ts web/drizzle
@@ -120,7 +120,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 Tipe argumen lot saat ini diketik ulang di dua tempat, di `addLot` dan `addLotWithInitialStock`. Menambah satu field berarti menyunting keduanya, dan suatu saat keduanya akan berbeda. Diekstrak jadi satu tipe. Ini kode yang memang sedang disentuh, bukan refactor terpisah.
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 Pakai helper yang ada (`freshDb`, `sampleLot`, gaya impor `service.xxx`):
 
@@ -151,12 +151,12 @@ describe("processMethod", () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal karena `processMethod` bukan properti yang dikenal, atau nilainya `undefined`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Di `web/lib/ledger/service.ts`, ganti dua tipe inline itu dengan satu tipe bersama, diletakkan tepat sebelum `addLot`:
 
@@ -180,12 +180,12 @@ export interface NewLotArgs {
 
 Ubah tanda tangan `addLot` dan `addLotWithInitialStock` agar keduanya memakai `args: NewLotArgs`, dan tambahkan `processMethod: args.processMethod ?? null` ke objek `newLot` di dalam `addLot`.
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `31 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/ledger.test.ts
@@ -218,19 +218,19 @@ mengeras.
 **Tidak ada test baru.** 31 test yang ada adalah jaringnya: perilakunya tidak boleh berubah
 sedikit pun.
 
-- [ ] **Step 1: Catat titik awal**
+- [x] **Step 1: Catat titik awal**
 
 Run: `cd web && npx vitest run`
 Expected: `31 passed`. Angka ini harus sama persis di akhir.
 
-- [ ] **Step 2: Pindahkan query-nya ke `repository.ts`**
+- [x] **Step 2: Pindahkan query-nya ke `repository.ts`**
 
 Pindahkan badan `outflowByReason` dan `giftsByRecipient` apa adanya ke
 `web/lib/ledger/repository.ts`, beserta tipe `OutflowRow` dan `RecipientRow`. Pindahkan juga
 impor yang mereka butuhkan. Jangan mengubah logikanya sama sekali, termasuk pengurutan dan
 penanganan catatan kosong.
 
-- [ ] **Step 3: Service mendelegasikan**
+- [x] **Step 3: Service mendelegasikan**
 
 Di `service.ts`, ganti keduanya menjadi pemanggilan tipis ke repository, dan **pertahankan
 komentar dokumentasinya di service** karena yang dijelaskan di sana adalah aturannya (kenapa
@@ -249,17 +249,17 @@ export async function giftsByRecipient(db: LedgerDb): Promise<repo.RecipientRow[
 
 Ekspor ulang tipenya dari service kalau ada komponen yang mengimpornya dari sana.
 
-- [ ] **Step 4: Pastikan tak ada SQL yang tersisa di service**
+- [x] **Step 4: Pastikan tak ada SQL yang tersisa di service**
 
 Run: `cd web && grep -n 'db.select\|from "./schema"' lib/ledger/service.ts`
 Expected: tidak ada hasil.
 
-- [ ] **Step 5: Perilaku tidak berubah**
+- [x] **Step 5: Perilaku tidak berubah**
 
 Run: `cd web && npx vitest run && npx tsc --noEmit && npx next build`
 Expected: `31 passed`, tipe bersih, build sukses. Kalau jumlah test berubah, ada yang salah.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/repository.ts
@@ -288,7 +288,7 @@ Ini yang membuat saran isian tumbuh dari data sendiri, bukan cuma dari daftar ku
 **Query-nya ke `repository.ts`, service mendelegasikan** — mengikuti pemisahan yang baru
 dipulihkan di Task 3. Jangan menaruh `db.select()` di `service.ts`.
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 ```ts
 describe("distinctLotValues", () => {
@@ -321,12 +321,12 @@ describe("distinctLotValues", () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `distinctLotValues is not a function`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 ```ts
 export interface LotValueSuggestions {
@@ -369,12 +369,12 @@ export async function distinctLotValues(db: LedgerDb): Promise<LotValueSuggestio
 }
 ```
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `34 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/ledger.test.ts
@@ -397,7 +397,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 Terpisah dari `regions.ts` karena file itu khusus geografi dan punya koordinat; ini kosakata tanpa koordinat.
 
-- [ ] **Step 1: Buat filenya**
+- [x] **Step 1: Buat filenya**
 
 ```ts
 /**
@@ -442,7 +442,7 @@ export const PROCESS_METHODS: readonly string[] = [
 
 Catatan: "Giling Basah" adalah wet-hulled, dikonfirmasi pemilik projek. Ditulis dalam bahasa Indonesia karena itu istilah yang dipakai di sini.
 
-- [ ] **Step 2: Cek tipe dan commit**
+- [x] **Step 2: Cek tipe dan commit**
 
 Run: `cd web && npx tsc --noEmit`
 
@@ -469,7 +469,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 **Keamanan:** `await requireSession()` tetap pernyataan pertama di `addLotAction` dan di halaman. Jangan diubah.
 
-- [ ] **Step 1: Halaman mengambil saran dan meneruskannya**
+- [x] **Step 1: Halaman mengambil saran dan meneruskannya**
 
 Di `web/app/(app)/lots/page.tsx`, ambil `distinctLotValues(db)` bersamaan dengan `stockSummary(db)` lewat `Promise.all`, lalu gabungkan dengan daftar kurasi dan oper ke `<AddLotForm>` sebagai satu prop:
 
@@ -497,7 +497,7 @@ const suggestions = {
 
 Nilai yang pernah dipakai ditaruh **di depan** supaya yang sering dipakai muncul duluan, dan pencocokan tidak peka besar-kecil huruf supaya `"typica"` yang pernah diketik tidak memunculkan `"Typica"` sebagai entri kedua.
 
-- [ ] **Step 2: Form menerima prop dan merender tiga datalist**
+- [x] **Step 2: Form menerima prop dan merender tiga datalist**
 
 Di `add-lot-form.tsx`, terima prop `suggestions: { origins: string[]; varietals: string[]; processMethods: string[] }`.
 
@@ -526,7 +526,7 @@ Tambahkan kolom baru setelah varietal:
       </label>
 ```
 
-- [ ] **Step 3: Action membaca dan meneruskannya**
+- [x] **Step 3: Action membaca dan meneruskannya**
 
 Di `web/app/(app)/actions.ts`, di dalam `addLotAction`, baca `processMethod` dari `formData`, ikutkan ke pemeriksaan wajib yang sudah ada, dan teruskan ke `addLotWithInitialStock`:
 
@@ -536,16 +536,16 @@ Di `web/app/(app)/actions.ts`, di dalam `addLotAction`, baca `processMethod` dar
 
 Ubah pemeriksaan wajibnya menjadi menyertakan `processMethod`, dengan pesan `"Nama, origin, varietal, proses, dan tanggal roast wajib diisi."`, lalu oper `processMethod` di dalam objek args.
 
-- [ ] **Step 4: Tampilkan kolomnya di tabel lot**
+- [x] **Step 4: Tampilkan kolomnya di tabel lot**
 
 Di `page.tsx`, tambahkan satu `<th>` "Proses" setelah Varietal dan `<td>` yang sesuai. Tampilkan `lot.processMethod ?? "—"` dengan `text-ink-faint` kalau kosong, supaya baris lama yang null terlihat sebagai tidak diisi, bukan sebagai kosong yang membingungkan.
 
-- [ ] **Step 5: Verifikasi**
+- [x] **Step 5: Verifikasi**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `34 passed`, build sukses.
 
-- [ ] **Step 6: Buktikan sampai ke database, dan lihat dengan mata**
+- [x] **Step 6: Buktikan sampai ke database, dan lihat dengan mata**
 
 Cetak cookie sesi seperti tugas sebelumnya di repo ini (`encode` dari `next-auth/jwt`, salt `authjs.session-token`, rahasia dari `../.env`), lalu dengan Playwright (`/Users/hilmi/anaconda3/bin/python`, viewport 1180x900, `device_scale_factor=2`):
 
@@ -563,7 +563,7 @@ Ambil screenshot penuh `/lots` dan `/` ke `.../scratchpad/lots-proses.png` dan `
 
 Hapus skrip sementara dan berkas token; `git status` harus bersih sebelum commit.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add web/
@@ -583,12 +583,12 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 ## Definisi selesai
 
-- [ ] `cd web && npx vitest run` → `34 passed`
-- [ ] `grep 'db.select' lib/ledger/service.ts` → tidak ada hasil; SQL kembali di repository
-- [ ] `uv run pytest` → `22 passed` (tidak tersentuh)
-- [ ] `npx tsc --noEmit` bersih, `npx next build` sukses
-- [ ] `information_schema` menunjukkan `process_method`, nullable
-- [ ] Migrasi Drizzle tersimpan di `web/drizzle/` dan sudah diterapkan
-- [ ] Ketiga kolom punya dropdown saran, dan nilai terpakai muncul di depan
-- [ ] Proses wajib diisi di form; kolomnya tetap nullable di database
-- [ ] Ada satu lot sungguhan di database supaya dashboard tidak kosong
+- [x] `cd web && npx vitest run` → `34 passed`
+- [x] `grep 'db.select' lib/ledger/service.ts` → tidak ada hasil; SQL kembali di repository
+- [x] `uv run pytest` → `22 passed` (tidak tersentuh)
+- [x] `npx tsc --noEmit` bersih, `npx next build` sukses
+- [x] `information_schema` menunjukkan `process_method`, nullable
+- [x] Migrasi Drizzle tersimpan di `web/drizzle/` dan sudah diterapkan
+- [x] Ketiga kolom punya dropdown saran, dan nilai terpakai muncul di depan
+- [x] Proses wajib diisi di form; kolomnya tetap nullable di database
+- [x] Ada satu lot sungguhan di database supaya dashboard tidak kosong
