@@ -48,6 +48,26 @@ export async function addLot(db: LedgerDb, args: NewLotArgs): Promise<Lot> {
   return repo.addLot(db, newLot);
 }
 
+export async function updateLot(
+  db: LedgerDb,
+  lotId: number,
+  args: NewLotArgs,
+): Promise<Lot> {
+  const fields: NewLot = {
+    name: args.name,
+    origin: args.origin,
+    varietal: args.varietal,
+    processMethod: args.processMethod ?? null,
+    roastDate: args.roastDate,
+    notes: args.notes ?? null,
+  };
+  const updated = await repo.updateLot(db, lotId, fields);
+  if (updated === null) {
+    throw new LotNotFoundError(`Lot id=${lotId} gak ditemukan`);
+  }
+  return updated;
+}
+
 /**
  * Buat lot, dan kalau gram awal diberikan, catat sekalian ACQUIRE-nya.
  *

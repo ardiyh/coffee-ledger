@@ -258,6 +258,48 @@ describe("finishLot", () => {
   });
 });
 
+describe("updateLot", () => {
+  it("mengubah field lot yang ada", async () => {
+    const db = await freshDb();
+    const created = await service.addLot(db, {
+      name: "Gayo Wine",
+      origin: "Gayo, Aceh",
+      varietal: "Typica",
+      roastDate: "2026-06-20",
+    });
+
+    const updated = await service.updateLot(db, created.id, {
+      name: "Gayo Wine Natural",
+      origin: "Gayo, Aceh",
+      varietal: "Bourbon",
+      roastDate: "2026-06-21",
+      processMethod: "Natural",
+      notes: "typo dibetulin",
+    });
+
+    expect(updated.name).toBe("Gayo Wine Natural");
+    expect(updated.varietal).toBe("Bourbon");
+    expect(updated.roastDate).toBe("2026-06-21");
+    expect(updated.processMethod).toBe("Natural");
+    expect(updated.notes).toBe("typo dibetulin");
+
+    const stored = (await service.listLots(db)).find((l) => l.id === created.id);
+    expect(stored?.name).toBe("Gayo Wine Natural");
+  });
+
+  it("lot yang gak ada melempar LotNotFoundError", async () => {
+    const db = await freshDb();
+    await expect(
+      service.updateLot(db, 999, {
+        name: "x",
+        origin: "y",
+        varietal: "z",
+        roastDate: "2026-01-01",
+      }),
+    ).rejects.toThrow(LotNotFoundError);
+  });
+});
+
 describe("addLotWithInitialStock", () => {
   const args = {
     name: "Gayo Bener Kelipah",

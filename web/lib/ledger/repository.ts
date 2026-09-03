@@ -112,6 +112,26 @@ export async function listLots(db: LedgerDb): Promise<Lot[]> {
   return rows.map(mapLot);
 }
 
+export async function updateLot(
+  db: LedgerDb,
+  lotId: number,
+  fields: NewLot,
+): Promise<Lot | null> {
+  const [row] = await db
+    .update(lot)
+    .set({
+      name: fields.name,
+      origin: fields.origin,
+      varietal: fields.varietal,
+      processMethod: fields.processMethod ?? null,
+      roastDate: fields.roastDate,
+      notes: fields.notes ?? null,
+    })
+    .where(eq(lot.id, lotId))
+    .returning();
+  return row ? mapLot(row) : null;
+}
+
 export async function addTransaction(
   db: LedgerDb,
   newTxn: NewTransaction,
