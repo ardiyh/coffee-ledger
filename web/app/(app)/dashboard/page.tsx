@@ -2,11 +2,11 @@ import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { stockSummary, outflowByReason, giftsByRecipient } from "@/lib/ledger/service";
-import { StatTiles } from "./_dashboard/stat-tiles";
-import { StockBars } from "./_dashboard/stock-bars";
-import { Outflow } from "./_dashboard/outflow";
-import { Recipients } from "./_dashboard/recipients";
-import { OriginMap } from "./_dashboard/origin-map";
+import { StatTiles } from "../_dashboard/stat-tiles";
+import { StockBars } from "../_dashboard/stock-bars";
+import { Outflow } from "../_dashboard/outflow";
+import { Recipients } from "../_dashboard/recipients";
+import { OriginMap } from "../_dashboard/origin-map";
 
 export default async function DashboardPage() {
   // Real auth boundary for this page — see lib/session.ts for why the

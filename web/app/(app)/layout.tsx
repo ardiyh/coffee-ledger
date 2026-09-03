@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/session";
 import { NavLinks, type NavItem } from "./nav-links";
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { href: "/", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/lots", label: "Lots" },
   { href: "/record", label: "Catat" },
   { href: "/history", label: "Riwayat" },
