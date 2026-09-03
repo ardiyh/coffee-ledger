@@ -14,7 +14,8 @@ export default function LoginPage() {
           className="mt-6"
           action={async () => {
             "use server";
-            await signIn("google", { redirectTo: "/" });
+            // / sekarang landing publik, jadi setelah masuk arahkan ke app-nya.
+            await signIn("google", { redirectTo: "/dashboard" });
           }}
         >
           <button

@@ -13,8 +13,9 @@ export function ColorDecision() {
         </h2>
         <p className="max-w-[640px] font-body text-base text-ink-dim">
           Warna IN dan OUT semula hijau dan merah bata. Simulasi buta warna
-          deuteranopia menunjukkan pada tingkat terang yang sama, ΔE dua
-          warna itu cuma di kisaran 1 sampai 6, praktis tidak terbedakan
+          deuteranopia menunjukkan hijau itu lolos cuma karena jauh lebih
+          terang dari clay. Begitu terangnya dikoreksi supaya bacaannya
+          setara, ΔE-nya jatuh ke 2,5, praktis tidak terbedakan
           buat sebagian penglihatan. Warnanya diganti jadi teal dan clay,
           ΔE naik ke 15,1. Bandingkan sendiri pasangannya di bawah.
         </p>
@@ -23,14 +24,14 @@ export function ColorDecision() {
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="rounded-lg border border-line bg-panel p-6">
           <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
-            Sebelum, deuteranopia ΔE 1 sampai 6
+            Sebelum, deuteranopia ΔE 2,5
           </p>
           <div className="mt-4 flex overflow-hidden rounded-md border border-line">
-            <div className="h-16 flex-1" style={{ backgroundColor: "#3f9660" }} />
-            <div className="h-16 flex-1" style={{ backgroundColor: "#b0483a" }} />
+            <div className="h-16 flex-1" style={{ backgroundColor: "#689651" }} />
+            <div className="h-16 flex-1" style={{ backgroundColor: "#B5654A" }} />
           </div>
           <p className="mt-3 font-body text-xs text-ink-faint">
-            Hijau dan merah bata, ilustrasi warna sebelum perubahan. Di bawah
+            Hijau dan clay, pasangan yang diuji waktu itu. Di bawah
             simulasi deuteranopia, keduanya nyaris melebur jadi satu warna.
           </p>
         </div>

@@ -11,7 +11,7 @@ export function Hero() {
     <section className="mx-auto flex max-w-[1100px] flex-col gap-10 px-6 pt-14 pb-16 lg:flex-row lg:items-center lg:gap-12 lg:pt-20">
       <div className="flex flex-col gap-6 lg:w-[46%]">
         <h1 className="font-display text-4xl leading-tight font-light text-ink sm:text-5xl">
-          Stok kopi dihitung dari riwayatnya, bukan disimpan sebagai angka.
+          Stok dihitung dari riwayatnya, bukan disimpan.
         </h1>
         <p className="font-body text-base text-ink-dim">
           Proyek belajar pribadi. Awalnya Streamlit di Python, sekarang
