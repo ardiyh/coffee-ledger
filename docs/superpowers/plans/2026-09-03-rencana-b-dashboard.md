@@ -1,6 +1,6 @@
 # Rencana B — Isi Dashboard, Keadaan Kosong, Peta
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Dashboard menampilkan umur roast, ke mana kopi pergi, siapa penerimanya, dan peta asal lot aktif — plus keadaan kosong yang tersusun, karena itulah tampilan yang dilihat sekarang.
 
@@ -49,7 +49,7 @@ Dashboard dipecah jadi komponen karena `page.tsx` akan jadi terlalu besar untuk 
 
 Umur roast dihitung dari `roastDate`, yang bertipe `date` (string `YYYY-MM-DD`), bukan timestamp. Tidak ada timezone yang perlu dikonversi; yang dibandingkan tanggal kalender di WIB.
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 Tambahkan `describe` baru di `web/lib/ledger/ledger.test.ts`, dan impor `daysSince` dari `"../format"`:
 
@@ -69,12 +69,12 @@ describe("daysSince", () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `daysSince is not a function`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Tambahkan ke `web/lib/format.ts`:
 
@@ -102,12 +102,12 @@ export function daysSince(roastDate: string, now: Date = new Date()): number {
 }
 ```
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `23 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/format.ts web/lib/ledger/ledger.test.ts
@@ -128,7 +128,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 - Modify: `web/lib/ledger/service.ts`
 - Modify: `web/lib/ledger/ledger.test.ts`
 
-- [ ] **Step 1: Tulis test yang gagal**
+- [x] **Step 1: Tulis test yang gagal**
 
 Pakai helper yang sudah ada di file itu (`freshDb`, `sampleLot`, dan gaya impor `service.xxx` yang dipakai test lain):
 
@@ -206,12 +206,12 @@ describe("giftsByRecipient", () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan, pastikan MERAH**
+- [x] **Step 2: Jalankan, pastikan MERAH**
 
 Run: `cd web && npx vitest run`
 Expected: gagal dengan `outflowByReason is not a function`. Laporkan pesan sebenarnya.
 
-- [ ] **Step 3: Implementasi**
+- [x] **Step 3: Implementasi**
 
 Tambahkan ke `web/lib/ledger/service.ts`:
 
@@ -266,12 +266,12 @@ export async function giftsByRecipient(db: LedgerDb): Promise<RecipientRow[]> {
 
 Tambahkan `sum` ke impor dari `drizzle-orm` kalau belum ada. Kalau nama tabel yang diimpor di file itu berbeda, pakai nama yang sebenarnya.
 
-- [ ] **Step 4: Jalankan, pastikan HIJAU**
+- [x] **Step 4: Jalankan, pastikan HIJAU**
 
 Run: `cd web && npx vitest run`
 Expected: `29 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/ledger/service.ts web/lib/ledger/ledger.test.ts
@@ -299,7 +299,7 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 Sumbernya **Natural Earth**, yang secara eksplisit domain publik. Sudah diverifikasi: setelah diekstrak dan dibulatkan dua desimal, hasilnya 13 poligon, 250 titik, sekitar 3,7 KB, dan render-nya benar (Sumatra, Jawa, Kalimantan, Sulawesi, Papua terbaca; titik Kerinci, Rantekarua, dan Kintamani jatuh di tempatnya).
 
-- [ ] **Step 1: Ekstrak outline-nya**
+- [x] **Step 1: Ekstrak outline-nya**
 
 ```bash
 cd web && mkdir -p lib/geo && cd lib/geo
@@ -320,7 +320,7 @@ rm -f /tmp/ne110m.geojson
 
 Expected: `poligon: 13 titik: 250 bytes: 3711` (atau sangat dekat). Kalau jauh berbeda, berhenti dan laporkan — sumbernya mungkin berubah.
 
-- [ ] **Step 2: Buat `web/lib/geo/project.ts`**
+- [x] **Step 2: Buat `web/lib/geo/project.ts`**
 
 ```ts
 import indonesia from "./indonesia.json";
@@ -361,7 +361,7 @@ export function indonesiaPath(): string {
 
 Kalau TypeScript menolak impor JSON, aktifkan `resolveJsonModule` di `web/tsconfig.json`.
 
-- [ ] **Step 3: Tambahkan `findRegion` ke `web/lib/regions.ts`**
+- [x] **Step 3: Tambahkan `findRegion` ke `web/lib/regions.ts`**
 
 Sekarang ada yang memanggilnya, jadi ia bukan lagi kode mati:
 
@@ -373,12 +373,12 @@ export function findRegion(origin: string): CoffeeRegion | undefined {
 }
 ```
 
-- [ ] **Step 4: Verifikasi**
+- [x] **Step 4: Verifikasi**
 
 Run: `cd web && npx tsc --noEmit && npx vitest run`
 Expected: bersih, `29 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/lib/geo web/lib/regions.ts web/tsconfig.json
@@ -406,11 +406,11 @@ Semuanya Server Component. Tidak ada `"use client"`, tidak ada library grafik, t
 
 Token yang dipakai: `--ground --panel --panel-2 --line --ink --ink-dim --ink-faint --amber --teal --clay`, lewat utility Tailwind yang sudah ada (`bg-panel`, `text-ink-dim`, `border-line`, `font-display`, `font-mono`, `tabular-nums`).
 
-- [ ] **Step 1: `stat-tiles.tsx`**
+- [x] **Step 1: `stat-tiles.tsx`**
 
 Tiga angka: total stok, lot aktif, total lot. Props: `{ total: number; active: number; all: number }`. Pertahankan tampilan yang sekarang ada di `page.tsx` (kartu `bg-panel` dengan label mono kecil dan angka besar `font-display`); ini pemindahan, bukan perancangan ulang.
 
-- [ ] **Step 2: `stock-bars.tsx`**
+- [x] **Step 2: `stock-bars.tsx`**
 
 Props: `{ rows: { name: string; stock: number; roastDate: string }[] }`.
 
@@ -418,7 +418,7 @@ Pertahankan bar yang sekarang: satu hue amber, sudut membulat 4px hanya di ujung
 
 Tambahkan umur roast sebagai baris kedua kecil di bawah nama lot: `{daysSince(roastDate)} hari sejak roast`, warna `text-ink-faint`. Kalau lebih dari 30, tambahkan ` · lewat masa prima` pada teks yang sama. **Tanpa warna status merah/kuning/hijau**: skalanya kontinu dan ambangnya selera, jadi angka plus label lebih jujur daripada lampu lalu lintas.
 
-- [ ] **Step 3: `outflow.tsx`**
+- [x] **Step 3: `outflow.tsx`**
 
 Props: `{ rows: { reason: string; grams: number }[] }`.
 
@@ -426,13 +426,13 @@ Tiga baris berlabel, tiap baris: label alasan dalam bahasa Indonesia (`GIFT` →
 
 Judul panel: "Ke mana kopimu pergi". Di bawahnya satu baris `text-ink-faint`: "Persentase dihitung dari total yang keluar, bukan dari yang masuk."
 
-- [ ] **Step 4: `recipients.tsx`**
+- [x] **Step 4: `recipients.tsx`**
 
 Props: `{ rows: { recipient: string; grams: number }[] }`.
 
 Bar horizontal satu hue amber, urut menurun, tiap bar dilabeli nama dan gram. Judul: "Siapa yang dapat kopimu". Tampilkan paling banyak 8 baris; kalau lebih, baris terakhir berbunyi `+N penerima lain`.
 
-- [ ] **Step 5: `origin-map.tsx`**
+- [x] **Step 5: `origin-map.tsx`**
 
 Props: `{ lots: { name: string; stock: number; origin: string }[] }` — hanya lot aktif yang dioper.
 
@@ -447,7 +447,7 @@ Beri tiap lingkaran `<title>` berisi nama lot dan gram, supaya terbaca pembaca l
 
 Lot yang origin-nya tidak cocok cukup tidak digambar. Kalau ada, tulis satu baris `text-ink-faint` di bawah peta: `N lot gak kegambar: origin-nya gak ada di daftar region.` Ini penting supaya tidak ada yang hilang diam-diam.
 
-- [ ] **Step 6: Susun ulang `page.tsx`**
+- [x] **Step 6: Susun ulang `page.tsx`**
 
 ```tsx
 await requireSession();
@@ -466,12 +466,12 @@ Susun:
 
 Panel 3 dan 4 **tetap tampil walau stok nol**, karena keduanya bicara tentang masa lalu, bukan stok sekarang.
 
-- [ ] **Step 7: Verifikasi**
+- [x] **Step 7: Verifikasi**
 
 Run: `cd web && npx next typegen && npx tsc --noEmit && npx vitest run && npx next build`
 Expected: bersih, `29 passed`, build sukses.
 
-- [ ] **Step 8: Lihat dengan mata, dua keadaan**
+- [x] **Step 8: Lihat dengan mata, dua keadaan**
 
 Cetak cookie sesi (cara yang sama seperti tugas sebelumnya di repo ini: `encode` dari `next-auth/jwt`, salt `authjs.session-token`, rahasia dari `../.env`), lalu dengan Playwright (`/Users/hilmi/anaconda3/bin/python`, viewport 1180x900, `device_scale_factor=2`):
 
@@ -485,7 +485,7 @@ Kemudian **habiskan** lot itu lewat tombol Habiskan supaya database kembali ke k
 
 **Lihat kedua screenshot** dan laporkan apa pun yang rusak: teks bertumpuk, kolom terpotong, titik peta di laut, bar yang meluber.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add web/
@@ -506,11 +506,11 @@ Claude-Session: https://claude.ai/code/session_017SaK7MGnLiydHT2ZtcEft6"
 
 ## Definisi selesai
 
-- [ ] `cd web && npx vitest run` → `29 passed`
-- [ ] `npx tsc --noEmit` bersih, `npx next build` sukses
-- [ ] `uv run pytest` → `22 passed` (tidak tersentuh)
-- [ ] Dashboard kosong menampilkan ajakan, bukan panel kosong
-- [ ] Dashboard berisi menampilkan bar stok dengan umur roast, dan peta dengan titik di tempat yang benar
-- [ ] "Ke mana kopimu pergi" tidak memasukkan ACQUIRE
-- [ ] Tidak ada library grafik atau peta yang ditambahkan
-- [ ] Database kembali ke stok nol setelah verifikasi, tanpa satu baris pun dihapus
+- [x] `cd web && npx vitest run` → `29 passed`
+- [x] `npx tsc --noEmit` bersih, `npx next build` sukses
+- [x] `uv run pytest` → `22 passed` (tidak tersentuh)
+- [x] Dashboard kosong menampilkan ajakan, bukan panel kosong
+- [x] Dashboard berisi menampilkan bar stok dengan umur roast, dan peta dengan titik di tempat yang benar
+- [x] "Ke mana kopimu pergi" tidak memasukkan ACQUIRE
+- [x] Tidak ada library grafik atau peta yang ditambahkan
+- [x] Database kembali ke stok nol setelah verifikasi, tanpa satu baris pun dihapus
