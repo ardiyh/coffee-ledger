@@ -6,8 +6,7 @@ import { NavLinks, type NavItem } from "./nav-links";
 
 const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/lots", label: "Lots" },
-  { href: "/record", label: "Catat" },
+  { href: "/rak", label: "Rak" },
   { href: "/history", label: "Riwayat" },
 ];
 

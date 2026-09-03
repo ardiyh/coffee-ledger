@@ -54,13 +54,13 @@ export default async function DashboardPage() {
             Belum ada stok aktif
           </p>
           <p className="mt-2 font-body text-sm text-ink-dim">
-            Tambah lot dan isi stok awalnya di halaman Lots.
+            Tambah lot dan isi stok awalnya di Rak.
           </p>
           <Link
-            href="/lots"
+            href="/rak"
             className="mt-6 inline-block rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
           >
-            Ke halaman Lots
+            Ke Rak
           </Link>
         </div>
       )}
