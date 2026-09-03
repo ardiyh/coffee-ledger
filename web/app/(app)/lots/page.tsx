@@ -4,8 +4,8 @@ import { distinctLotValues, stockSummary } from "@/lib/ledger/service";
 import { formatGrams } from "@/lib/format";
 import { COFFEE_REGIONS } from "@/lib/regions";
 import { VARIETALS, PROCESS_METHODS } from "@/lib/coffee-vocab";
-import { AddLotForm } from "./add-lot-form";
-import { FinishLotButton } from "./finish-lot-button";
+import { AddLotForm } from "../rak/add-lot-form";
+import { FinishLotButton } from "../rak/finish-lot-button";
 
 const merge = (used: string[], curated: readonly string[]) => [
   ...used,

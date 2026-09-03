@@ -70,8 +70,9 @@ export async function addLotAction(
   // Fresh numbers everywhere a lot list or stock figure is shown.
   revalidatePath("/lots");
   revalidatePath("/record");
+  revalidatePath("/rak");
   revalidatePath("/history");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
@@ -125,10 +126,11 @@ export async function recordAction(
   }
 
   // Fresh numbers on the record form itself (stock shown per option),
-  // history, and the dashboard.
+  // Rak's rows, history, and the dashboard.
   revalidatePath("/record");
+  revalidatePath("/rak");
   revalidatePath("/history");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
@@ -150,7 +152,8 @@ export async function finishLotAction(
 
   revalidatePath("/lots");
   revalidatePath("/record");
+  revalidatePath("/rak");
   revalidatePath("/history");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   return { success: true };
 }
