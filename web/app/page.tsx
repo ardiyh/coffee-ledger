@@ -12,6 +12,20 @@ import { StackLinks } from "./_landing/stack-links";
 export default function Home() {
   return (
     <div className="flex min-h-full flex-col">
+      {/*
+       * The page's one depth cue: a very faint warm glow, fixed to the
+       * viewport so it never scrolls with content and never repeats
+       * itself section to section.
+       */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 900px 600px at 50% 0%, var(--amber) 0%, transparent 70%)",
+          opacity: 0.03,
+        }}
+      />
       <LandingNav />
       <main className="flex-1">
         <Hero />

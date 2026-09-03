@@ -54,3 +54,26 @@ body {
  * reach for that class wherever digits need to line up (stat tiles, bar
  * values, timestamps) instead of redefining it here.
  */
+
+/*
+ * Scroll-entry motion for the landing page. Deliberately gated behind
+ * `no-preference`: under `prefers-reduced-motion: reduce`, `.reveal` picks
+ * up no rule here at all, so it just renders at its natural opacity and
+ * position immediately, no matter what the IntersectionObserver in
+ * `_landing/reveal.tsx` does or when it fires. Nothing to disable, nothing
+ * that can flash hidden content.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

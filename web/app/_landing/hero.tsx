@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Reveal } from "./reveal";
 
 /**
  * Heading is two lines at most, the supporting sentence stays under 20
@@ -9,7 +10,7 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="mx-auto flex max-w-[1100px] flex-col gap-10 px-6 pt-14 pb-16 lg:flex-row lg:items-center lg:gap-12 lg:pt-20">
-      <div className="flex flex-col gap-6 lg:w-[46%]">
+      <Reveal className="flex flex-col gap-6 lg:w-[46%]">
         <h1 className="font-display text-4xl leading-tight font-light text-ink sm:text-5xl">
           Stok dihitung dari riwayatnya, bukan disimpan.
         </h1>
@@ -25,8 +26,11 @@ export function Hero() {
             Masuk
           </Link>
         </div>
-      </div>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel lg:w-[54%]">
+      </Reveal>
+      <Reveal
+        delayMs={80}
+        className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel lg:w-[54%]"
+      >
         <Image
           src="/app-dashboard.png"
           alt="Dashboard Coffee Ledger: total stok, bar per lot, dan peta asal lot aktif"
@@ -35,7 +39,7 @@ export function Hero() {
           sizes="(min-width: 1024px) 54vw, 100vw"
           className="object-cover object-top"
         />
-      </div>
+      </Reveal>
     </section>
   );
 }
