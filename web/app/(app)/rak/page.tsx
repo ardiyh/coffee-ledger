@@ -37,38 +37,33 @@ export default async function RakPage() {
     if (b.stock !== a.stock) return b.stock - a.stock;
     return a.lot.name.localeCompare(b.lot.name);
   });
+  const activeLots = sortedLots.filter(({ stock }) => stock > 0);
+  const emptyLots = sortedLots.filter(({ stock }) => stock <= 0);
+  const renderLot = ({ lot, stock }: (typeof lots)[number]) => (
+    <LotRow key={lot.id} lotId={lot.id} name={lot.name} origin={lot.origin}
+      varietal={lot.varietal} processMethod={lot.processMethod} roastDate={lot.roastDate}
+      notes={lot.notes} stock={stock} suggestions={suggestions} />
+  );
 
   return (
     <div className="flex flex-col gap-10">
-      {sortedLots.length === 0 ? (
+      <h1 className="font-display text-lg font-medium text-ink">Rak</h1>
+      {activeLots.length === 0 ? (
         <div className="rounded-lg border border-line bg-panel p-10 text-center">
           <p className="font-display text-lg font-medium text-ink">
-            Belum ada lot.
+            {lots.length === 0 ? "Belum ada lot." : "Belum ada stok aktif."}
           </p>
           <p className="mt-2 font-body text-sm text-ink-dim">
-            Tambahkan lot pertama di bawah.
+            Tambahkan lot di bawah atau isi kembali lot yang sudah habis.
           </p>
         </div>
       ) : (
         <section className="flex flex-col gap-4">
-          {sortedLots.map(({ lot, stock }) => (
-            <LotRow
-              key={lot.id}
-              lotId={lot.id}
-              name={lot.name}
-              origin={lot.origin}
-              varietal={lot.varietal}
-              processMethod={lot.processMethod}
-              roastDate={lot.roastDate}
-              notes={lot.notes}
-              stock={stock}
-              suggestions={suggestions}
-            />
-          ))}
+          {activeLots.map(renderLot)}
         </section>
       )}
 
-      <details open={sortedLots.length === 0}>
+      <details open={activeLots.length === 0}>
         <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
           Tambah lot baru
         </summary>
@@ -76,6 +71,15 @@ export default async function RakPage() {
           <AddLotForm todayISO={todayISO} suggestions={suggestions} />
         </section>
       </details>
+
+      {emptyLots.length > 0 ? (
+        <details>
+          <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
+            Lot habis ({emptyLots.length})
+          </summary>
+          <section className="mt-4 flex flex-col gap-4">{emptyLots.map(renderLot)}</section>
+        </details>
+      ) : null}
     </div>
   );
 }
