@@ -12,11 +12,12 @@
   --line: #2e2823; /* borders, dividers */
   --ink: #e9e3db; /* primary text */
   --ink-dim: #9c9086; /* secondary text */
-  --ink-faint: #7e7369; /* labels, captions */
+  --ink-faint: #9a8e83; /* labels, captions */
   --amber: #c8965a; /* single accent; also the bar hue */
   --amber-dim: #8a6538;
   --teal: #17a2b8; /* IN / stock increase */
-  --clay: #b5654a; /* OUT / stock decrease */
+  --clay: #b5654a; /* OUT / stock decrease swatch */
+  --clay-ink: #c87d63; /* readable OUT/error text on dark panels */
 }
 
 /*
@@ -38,6 +39,7 @@
   --color-amber-dim: var(--amber-dim);
   --color-teal: var(--teal);
   --color-clay: var(--clay);
+  --color-clay-ink: var(--clay-ink);
 
   --font-display: var(--font-geist);
   --font-body: var(--font-geist);

@@ -83,7 +83,7 @@ export default async function HistoryPage() {
                     </td>
                     <td
                       className={`whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums ${
-                        isIn ? "text-teal" : "text-clay"
+                        isIn ? "text-teal" : "text-clay-ink"
                       }`}
                     >
                       {isIn ? "+" : "−"}
