@@ -23,17 +23,24 @@ UI (Next.js di Vercel)  →  web/lib/ledger/ (core TypeScript, tested)  →  Neo
                                      src/coffee_ledger/ (jalur baca Python buat EDA)
 ```
 
-Logika inti (`src/coffee_ledger/`) dipisah & dites; UI cuma lapisan tipis di atasnya.
+Logika aplikasi ada di `web/lib/ledger/`, terpisah dari UI. Python dipakai untuk EDA.
 
 ## Kepemilikan schema
 
 Sejak Streamlit pensiun, **Drizzle yang memiliki schema**. Perubahan kolom lewat
-`drizzle-kit generate` + `drizzle-kit migrate` dari dalam `web/`.
+`npm run db:generate` + `npm run db:migrate` dari dalam `web/`.
 
 `src/coffee_ledger/` dipertahankan sebagai jalur baca Python untuk analisa (pandas,
 notebook). Model SQLModel-nya bisa tertinggal dari schema kalau Drizzle menambah kolom;
 untuk membaca kolom lama itu tidak masalah, dan itu satu-satunya yang dibutuhkan EDA.
-Jangan menjalankan `SQLModel.metadata.create_all()` terhadap database produksi lagi.
+`make_engine()` membuka PostgreSQL dengan transaksi READ ONLY, dan `init_db()`
+menolak PostgreSQL. Fungsi tulis lama hanya dipakai untuk eksperimen SQLite lokal.
+
+Gram disimpan sebagai Postgres `numeric`. Penjumlahan saldo dilakukan di SQL supaya
+pecahan seperti `0.3 - 0.1 - 0.2` tepat menjadi nol. Constraint memeriksa gram positif
+dan terbatas, serta pasangan arah/alasan. Trigger `transaction_stock_guard` mengunci
+penulis per lot dan menolak pengeluaran melebihi saldo. Lot dan stok awal dibuat
+dalam satu pernyataan SQL: keduanya tersimpan atau keduanya dibatalkan.
 
 ## Struktur
 
@@ -43,23 +50,38 @@ web/                 # app Next.js (UI + core TypeScript + test)
   app/(app)/         # halaman di balik login
 src/coffee_ledger/   # jalur baca Python buat analisa
 tests/               # pytest
-notebooks/           # analisa (pandas)
 data/                # SQLite lokal buat eksperimen (gak di-commit)
 ```
 
 ## Cara jalanin (dev)
 
 ```bash
-# app (Next.js)
-cd web && npm install
+# app (Node.js 22, Next.js)
+cd web
+npm ci
+cp .env.example .env.local          # isi Neon URL, Google OAuth, dan AUTH_SECRET
+npm run db:migrate                 # periksa target DATABASE_URL sebelum menjalankan
 npm run dev                        # http://localhost:3000
-npm test                           # 14 test, pakai PGlite, gak butuh DATABASE_URL
-
-# sisi Python (analisa)
-uv sync
-uv run pytest
-uv run ruff check
+npm test                           # PGlite + interaksi form, tanpa database eksternal
+npm run lint
+npm run typecheck
+npm run build
 ```
+
+Konfigurasi OAuth, urutan environment, dan migrasi dijelaskan di [web/README.md](web/README.md).
+Devcontainer menyediakan Python 3.12 dan Node.js 22; setelah konfigurasi environment,
+jalankan `npm run dev --prefix web`. Streamlit tidak lagi diperlukan.
+
+```bash
+# dari root repo, untuk Python
+uv sync --frozen
+uv run --frozen pytest
+uv run --frozen ruff check
+```
+
+Untuk analisis Neon, ekspor `DATABASE_URL` pada shell sebelum menjalankan script/notebook.
+Python tidak otomatis membaca `.env`. Tanpa URL tersebut, `make_engine()` memakai
+SQLite lokal. Gunakan role database khusus baca untuk kredensial analisis bila tersedia.
 
 ## Roadmap
 
