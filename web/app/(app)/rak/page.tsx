@@ -47,7 +47,22 @@ export default async function RakPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <h1 className="font-display text-lg font-medium text-ink">Rak</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-lg font-medium text-ink">Rak</h1>
+        {/*
+          A plain fragment link: navigating to an id hidden inside a closed
+          <details> makes the browser open that ancestor and scroll to the
+          target on its own (the HTML "reveal" algorithm) -- no client JS
+          needed. tabindex on the target section makes it focusable, so the
+          jump also lands keyboard focus somewhere visible, not just scroll.
+        */}
+        <a
+          href="#tambah-lot-form"
+          className="rounded-full border border-line px-4 py-2 font-body text-sm text-ink transition-colors hover:border-amber hover:text-amber"
+        >
+          Tambah lot
+        </a>
+      </div>
       {activeLots.length === 0 ? (
         <div className="rounded-lg border border-line bg-panel p-10 text-center">
           <p className="font-display text-lg font-medium text-ink">
@@ -67,7 +82,11 @@ export default async function RakPage() {
         <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
           Tambah lot baru
         </summary>
-        <section className="mt-4 rounded-lg border border-line bg-panel p-6">
+        <section
+          id="tambah-lot-form"
+          tabIndex={-1}
+          className="mt-4 rounded-lg border border-line bg-panel p-6 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-amber"
+        >
           <AddLotForm todayISO={todayISO} suggestions={suggestions} />
         </section>
       </details>

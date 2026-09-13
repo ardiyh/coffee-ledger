@@ -20,7 +20,6 @@ export function OriginMap({
 }: {
   lots: { name: string; stock: number; origin: string }[];
 }) {
-  const maxStock = Math.max(0, ...lots.map((l) => l.stock));
   const placed = lots
     .map((l) => ({ ...l, region: findRegion(l.origin) }))
     .filter((l) => l.region !== undefined) as {
@@ -30,6 +29,27 @@ export function OriginMap({
     region: NonNullable<ReturnType<typeof findRegion>>;
   }[];
   const unplacedCount = lots.length - placed.length;
+
+  // Group by region: two lots with the same origin project to the exact same
+  // coordinate, so plotting them as separate circles just stacks one
+  // invisibly on top of the other. One marker per region, sized by their
+  // combined stock, and the companion list below reads this same grouping
+  // so the two never disagree.
+  const byRegion = new Map<
+    string,
+    { region: (typeof placed)[number]["region"]; stock: number; count: number }
+  >();
+  for (const l of placed) {
+    const existing = byRegion.get(l.region.name);
+    if (existing) {
+      existing.stock += l.stock;
+      existing.count += 1;
+    } else {
+      byRegion.set(l.region.name, { region: l.region, stock: l.stock, count: 1 });
+    }
+  }
+  const grouped = [...byRegion.values()].sort((a, b) => b.stock - a.stock);
+  const maxStock = Math.max(0, ...grouped.map((g) => g.stock));
 
   return (
     <section className="rounded-lg border border-line bg-panel p-6">
@@ -56,23 +76,47 @@ export function OriginMap({
           stroke="var(--line)"
           strokeWidth="1"
         />
-        {placed.map((l) => {
-          const { x, y } = project(l.region.lon, l.region.lat);
-          const ratio = maxStock > 0 ? l.stock / maxStock : 0;
+        {grouped.map((g) => {
+          const { x, y } = project(g.region.lon, g.region.lat);
+          const ratio = maxStock > 0 ? g.stock / maxStock : 0;
           const r = MIN_RADIUS + (MAX_RADIUS - MIN_RADIUS) * Math.sqrt(ratio);
           return (
-            <circle key={l.name} cx={x} cy={y} r={r} fill="var(--amber)">
+            <circle key={g.region.name} cx={x} cy={y} r={r} fill="var(--amber)">
               {/*
                 React requires <title> children to collapse to a single
                 string (it errors on an array of nodes here, unlike other
                 elements), so this is a template literal, not interpolated
-                JSX text nodes.
+                JSX text nodes. Hover-only, so it's a bonus for mouse users,
+                not the way anyone is meant to read this — the list below
+                carries the same numbers as always-visible text.
               */}
-              <title>{`${l.name} — ${formatGrams(l.stock)}`}</title>
+              <title>{`${g.region.name} — ${formatGrams(g.stock)}`}</title>
             </circle>
           );
         })}
       </svg>
+
+      {grouped.length > 0 ? (
+        <ul className="mt-4 flex flex-col gap-2 border-t border-line pt-4">
+          {grouped.map((g) => (
+            <li
+              key={g.region.name}
+              className="flex items-baseline justify-between gap-3 font-body text-sm"
+            >
+              <span className="text-ink">
+                {g.region.name}{" "}
+                <span className="font-mono text-xs text-ink-faint">
+                  · {g.count} lot
+                </span>
+              </span>
+              <span className="font-mono tabular-nums text-ink-dim">
+                {formatGrams(g.stock)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       {unplacedCount > 0 ? (
         <p className="mt-3 font-body text-xs text-ink-faint">
           {unplacedCount} lot gak kegambar: origin-nya gak ada di daftar
