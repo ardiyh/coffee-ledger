@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn } from "@/auth";
+import { CredentialsForm } from "./credentials-form";
 
 export default function LoginPage() {
   return (
@@ -26,6 +27,14 @@ export default function LoginPage() {
             Masuk dengan Google
           </button>
         </form>
+
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-line" />
+          <span className="font-body text-xs text-ink-faint">atau</span>
+          <div className="h-px flex-1 bg-line" />
+        </div>
+
+        <CredentialsForm />
       </div>
       <Link
         href="/"
