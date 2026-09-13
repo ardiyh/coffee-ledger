@@ -20,6 +20,8 @@ npm run dev
 - `AUTH_SECRET`: buat dengan `openssl rand -base64 32`.
 - `AUTH_GOOGLE_ID` dan `AUTH_GOOGLE_SECRET`: kredensial OAuth Google.
 - `AUTH_ALLOWED_EMAIL`: satu email pemilik yang diizinkan masuk.
+- `AUTH_PASSWORD_HASH` (opsional): alternatif login email+password selain Google. Generate
+  lewat `node scripts/hash-password.mjs "password-baru"`, salin hasilnya ke sini.
 
 Redirect URI Google untuk lokal: `http://localhost:3000/api/auth/callback/google`.
 Untuk Vercel, tambahkan URI yang sama dengan domain deployment dan atur variabel
