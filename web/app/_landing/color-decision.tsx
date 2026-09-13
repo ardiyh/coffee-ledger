@@ -64,8 +64,11 @@ export function ColorDecision() {
             <div className="h-28 flex-1 bg-clay sm:h-36" />
           </div>
           <p className="mt-4 font-body text-sm text-ink-dim">
-            Teal dan clay, warna IN dan OUT yang dipakai di seluruh app
-            sekarang. Terpisah jelas walau di bawah simulasi yang sama.
+            Teal dan clay, pasangan yang diuji ΔE-nya di atas. Terpisah jelas
+            walau di bawah simulasi yang sama. Teks OUT di app sekarang
+            sebenarnya memakai clay-ink, varian clay yang dicerahkan lagi
+            demi kontras teks di panel gelap — angka ΔE 15,1 mengukur clay,
+            belum diuji ulang untuk clay-ink.
           </p>
         </Reveal>
       </div>
