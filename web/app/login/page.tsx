@@ -10,7 +10,7 @@ export default function LoginPage() {
           Coffee Ledger
         </h1>
         <p className="mt-2 font-body text-sm text-ink-dim">
-          Akses dibatasi untuk akun Google pemilik.
+          Akses dibatasi untuk pemilik saja.
         </p>
         <form
           className="mt-6"
