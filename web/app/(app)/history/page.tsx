@@ -41,63 +41,106 @@ export default async function HistoryPage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line bg-panel">
-          <table className="w-full border-collapse font-body text-sm">
-            <thead>
-              <tr className="border-b border-line text-left">
-                <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                  Waktu
-                </th>
-                <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                  Lot
-                </th>
-                <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                  Alasan
-                </th>
-                <th className="px-4 py-3 text-right font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                  Gram
-                </th>
-                <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                  Catatan
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((t) => {
-                // Sign is the primary encoding, colour reinforces it. Never
-                // colour by reason — ADJUST goes both ways, so that would lie.
-                const isIn = t.kind === "IN";
-                return (
-                  <tr
-                    key={t.id}
-                    className="border-b border-line last:border-0"
-                  >
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-ink-dim">
-                      {formatWIB(t.ts)}
-                    </td>
-                    <td className="px-4 py-3 text-ink">
+        <>
+          {/*
+            Mobile: cards, not a horizontally-scrolled table. The five-column
+            table overflows a 390px screen wide enough that grams and notes —
+            the numbers that actually answer "how much moved" — sit past the
+            fold by default. Sign + grams lead each card; reason and time
+            follow; the note, if any, trails last.
+          */}
+          <ul className="flex flex-col gap-3 sm:hidden">
+            {sorted.map((t) => {
+              const isIn = t.kind === "IN";
+              return (
+                <li
+                  key={t.id}
+                  className="rounded-lg border border-line bg-panel p-4"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-body text-sm text-ink">
                       {lotNames.get(t.lotId) ?? `Lot ${t.lotId}`}
-                    </td>
-                    <td className="px-4 py-3 text-ink-dim">
-                      {REASON_LABELS[t.reason]}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums ${
+                    </span>
+                    <span
+                      className={`font-mono text-sm tabular-nums ${
                         isIn ? "text-teal" : "text-clay-ink"
                       }`}
                     >
                       {isIn ? "+" : "−"}
                       {formatGrams(t.grams)}
-                    </td>
-                    <td className="px-4 py-3 text-ink-dim">
-                      {t.note ?? ""}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </span>
+                  </div>
+                  <p className="mt-1 font-body text-xs text-ink-faint">
+                    {REASON_LABELS[t.reason]} · {formatWIB(t.ts)}
+                  </p>
+                  {t.note ? (
+                    <p className="mt-1 font-body text-xs text-ink-dim">
+                      {t.note}
+                    </p>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-lg border border-line bg-panel sm:block">
+            <table className="w-full border-collapse font-body text-sm">
+              <thead>
+                <tr className="border-b border-line text-left">
+                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
+                    Waktu
+                  </th>
+                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
+                    Lot
+                  </th>
+                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
+                    Alasan
+                  </th>
+                  <th className="px-4 py-3 text-right font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
+                    Gram
+                  </th>
+                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
+                    Catatan
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((t) => {
+                  // Sign is the primary encoding, colour reinforces it. Never
+                  // colour by reason — ADJUST goes both ways, so that would lie.
+                  const isIn = t.kind === "IN";
+                  return (
+                    <tr
+                      key={t.id}
+                      className="border-b border-line last:border-0"
+                    >
+                      <td className="whitespace-nowrap px-4 py-3 font-mono text-ink-dim">
+                        {formatWIB(t.ts)}
+                      </td>
+                      <td className="px-4 py-3 text-ink">
+                        {lotNames.get(t.lotId) ?? `Lot ${t.lotId}`}
+                      </td>
+                      <td className="px-4 py-3 text-ink-dim">
+                        {REASON_LABELS[t.reason]}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums ${
+                          isIn ? "text-teal" : "text-clay-ink"
+                        }`}
+                      >
+                        {isIn ? "+" : "−"}
+                        {formatGrams(t.grams)}
+                      </td>
+                      <td className="px-4 py-3 text-ink-dim">
+                        {t.note ?? ""}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
