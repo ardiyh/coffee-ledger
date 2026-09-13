@@ -9,7 +9,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google,
     Credentials({
-      credentials: { email: {}, password: {} },
+      credentials: { email: {}, password: { type: "password" } },
       async authorize(creds) {
         const email = String(creds.email ?? "").trim().toLowerCase();
         const password = String(creds.password ?? "");
