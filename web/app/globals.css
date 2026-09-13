@@ -14,7 +14,10 @@
   --ink-dim: #9c9086; /* secondary text */
   --ink-faint: #9a8e83; /* labels, captions */
   --amber: #c8965a; /* single accent; also the bar hue */
-  --amber-dim: #8a6538;
+  /* Hover state brightens rather than darkens: text-ground on amber-dim
+   * (the old #8a6538) measured 3.59:1, below WCAG 1.4.3's 4.5:1 minimum for
+   * normal text. amber-hover keeps text-ground readable at ~8.5:1. */
+  --amber-hover: #d4a670;
   --teal: #17a2b8; /* IN / stock increase */
   --clay: #b5654a; /* OUT / stock decrease swatch */
   --clay-ink: #c87d63; /* readable OUT/error text on dark panels */
@@ -36,7 +39,7 @@
   --color-ink-dim: var(--ink-dim);
   --color-ink-faint: var(--ink-faint);
   --color-amber: var(--amber);
-  --color-amber-dim: var(--amber-dim);
+  --color-amber-hover: var(--amber-hover);
   --color-teal: var(--teal);
   --color-clay: var(--clay);
   --color-clay-ink: var(--clay-ink);

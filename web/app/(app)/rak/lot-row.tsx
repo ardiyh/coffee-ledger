@@ -149,7 +149,7 @@ export function LotRow({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim disabled:opacity-50"
+            className="rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover disabled:opacity-50"
           >
             {pending ? "Menyimpan..." : "Catat"}
           </button>

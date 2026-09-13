@@ -59,7 +59,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/rak"
-            className="mt-6 inline-block rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
+            className="mt-6 inline-block rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover"
           >
             Ke Rak
           </Link>

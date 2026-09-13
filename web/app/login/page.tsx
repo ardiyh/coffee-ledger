@@ -20,7 +20,7 @@ export default function LoginPage() {
         >
           <button
             type="submit"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-amber px-5 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-amber px-5 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover"
           >
             Sign in with Google
           </button>

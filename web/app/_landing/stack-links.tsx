@@ -40,7 +40,7 @@ export function StackLinks() {
             href="https://github.com/ardiyh/coffee-ledger"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-body text-sm text-amber transition-colors hover:text-amber-dim"
+            className="font-body text-sm text-amber transition-colors hover:text-amber-hover"
           >
             Lihat repo di GitHub
           </a>
@@ -48,7 +48,7 @@ export function StackLinks() {
 
         <Link
           href="/login"
-          className="inline-flex h-11 items-center self-start rounded-full bg-amber px-6 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
+          className="inline-flex h-11 items-center self-start rounded-full bg-amber px-6 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover"
         >
           Masuk
         </Link>

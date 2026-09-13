@@ -44,7 +44,7 @@ export default async function AppLayout({
           >
             <button
               type="submit"
-              className="font-body text-sm text-ink-dim transition-colors hover:text-ink"
+              className="-my-3 -mr-3 rounded-full px-3 py-3 font-body text-sm text-ink-dim transition-colors hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber"
             >
               Keluar
             </button>

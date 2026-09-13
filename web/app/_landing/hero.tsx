@@ -21,7 +21,7 @@ export function Hero() {
         <div>
           <Link
             href="/login"
-            className="inline-flex h-11 items-center rounded-full bg-amber px-6 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-dim"
+            className="inline-flex h-11 items-center rounded-full bg-amber px-6 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover"
           >
             Masuk
           </Link>
