@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from coffee_ledger.repository import LedgerRepository, init_db, make_engine
 from coffee_ledger.service import LedgerService
 
@@ -27,6 +29,22 @@ def test_postgres_engine_enables_pre_ping():
     engine = make_engine("postgresql+psycopg2://u:p@localhost:5432/db")
 
     assert engine.pool._pre_ping is True
+
+
+def test_postgres_engine_is_read_only_for_analysis():
+    engine = make_engine("postgresql+psycopg2://u:p@localhost:5432/db")
+    assert engine.get_execution_options().get("postgresql_readonly") is True
+
+
+def test_init_db_refuses_postgres_without_connecting(monkeypatch):
+    engine = make_engine("postgresql+psycopg2://u:p@localhost:5432/db")
+
+    def unexpected_connection(*args, **kwargs):
+        pytest.fail("init_db must reject PostgreSQL before connecting")
+
+    monkeypatch.setattr(engine, "connect", unexpected_connection)
+    with pytest.raises(ValueError, match="Drizzle"):
+        init_db(engine)
 
 
 def test_wait_for_db_returns_on_working_engine():

@@ -39,11 +39,16 @@ def make_engine(url: str | None = None):
         # otomatis; recycle buang koneksi >5 menit sebelum di-drop server.
         kwargs["pool_pre_ping"] = True
         kwargs["pool_recycle"] = 300
+        # PostgreSQL is the shared application database. Python only reads it;
+        # writes and schema migrations belong to the Next.js/Drizzle app.
+        kwargs["execution_options"] = {"postgresql_readonly": True}
     return create_engine(url, connect_args=connect_args, **kwargs)
 
 
 def init_db(engine) -> None:
-    """Bikin semua tabel dari model SQLModel (kalau belum ada)."""
+    """Bikin tabel eksperimen SQLite; schema PostgreSQL dimiliki Drizzle."""
+    if engine.dialect.name != "sqlite":
+        raise ValueError("Schema PostgreSQL dikelola Drizzle, bukan init_db() Python.")
     SQLModel.metadata.create_all(engine)
 
 
