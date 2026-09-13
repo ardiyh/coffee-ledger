@@ -18,7 +18,7 @@
 - Create: `web/lib/auth/password.ts`
 - Test: `web/lib/auth/password.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/lib/auth/password.test.ts`:
 
@@ -57,12 +57,12 @@ describe("hashPassword / verifyPassword", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run (from `web/`): `npm test -- --run -t "hashPassword / verifyPassword"`
 Expected: FAIL — `Cannot find module './password'` (the file doesn't exist yet).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `web/lib/auth/password.ts`:
 
@@ -97,13 +97,13 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run (from `web/`): `npm test -- --run`
 Expected: all tests pass, including the 5 new ones in `password.test.ts` (test count goes up
 by 5 from wherever it currently stands).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -132,7 +132,7 @@ the app itself.
 **Files:**
 - Create: `web/scripts/hash-password.mjs`
 
-- [ ] **Step 1: Write the script**
+- [x] **Step 1: Write the script**
 
 Create `web/scripts/hash-password.mjs`:
 
@@ -159,7 +159,7 @@ a `.mjs` script would need a TypeScript loader that isn't otherwise a dependency
 project. If the hash format in `password.ts` ever changes, this script must be updated to
 match by hand — noted as a known risk in the spec (§10), not something to solve here.
 
-- [ ] **Step 2: Run it and verify the output shape**
+- [x] **Step 2: Run it and verify the output shape**
 
 Run (from `web/`): `node scripts/hash-password.mjs "test-password-123"`
 Expected: prints one line matching `<64 hex chars>:<128 hex chars>` (16-byte salt = 32 hex
@@ -170,7 +170,7 @@ Run it a second time with the same password and confirm the output is **differen
 (random salt each run) — this is the same property Task 1's "dua hash... tidak identik" test
 already covers for the underlying function, just eyeballed here for the script itself.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -199,7 +199,7 @@ through the manual browser check in Task 7.
 **Files:**
 - Modify: `web/auth.ts`
 
-- [ ] **Step 1: Replace the file contents**
+- [x] **Step 1: Replace the file contents**
 
 The current file is:
 
@@ -285,18 +285,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 ```
 
-- [ ] **Step 2: Type-check**
+- [x] **Step 2: Type-check**
 
 Run (from `web/`): `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 3: Run the full test suite (regression check)**
+- [x] **Step 3: Run the full test suite (regression check)**
 
 Run (from `web/`): `npm test -- --run`
 Expected: all tests still pass (this task doesn't touch anything the test suite covers directly
 — `password.ts` from Task 1 isn't re-tested here, just consumed).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -325,7 +325,7 @@ No automated test — same reasoning as every other Server Action in this codeba
 **Files:**
 - Create: `web/app/login/actions.ts`
 
-- [ ] **Step 1: Write the action**
+- [x] **Step 1: Write the action**
 
 Create `web/app/login/actions.ts`:
 
@@ -362,12 +362,12 @@ export async function credentialsSignInAction(
 }
 ```
 
-- [ ] **Step 2: Type-check**
+- [x] **Step 2: Type-check**
 
 Run (from `web/`): `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -393,7 +393,7 @@ EOF
 **Files:**
 - Create: `web/app/login/credentials-form.tsx`
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 Create `web/app/login/credentials-form.tsx`:
 
@@ -456,13 +456,13 @@ export function CredentialsForm() {
 }
 ```
 
-- [ ] **Step 2: Type-check and lint**
+- [x] **Step 2: Type-check and lint**
 
 Run (from `web/`): `npx tsc --noEmit && npx eslint "app/login/credentials-form.tsx"`
 Expected: no errors. (Not imported anywhere yet — that's Task 6 — so this only confirms it
 compiles cleanly on its own.)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -487,7 +487,7 @@ EOF
 **Files:**
 - Modify: `web/app/login/page.tsx`
 
-- [ ] **Step 1: Replace the file contents**
+- [x] **Step 1: Replace the file contents**
 
 The current file is:
 
@@ -584,7 +584,7 @@ export default function LoginPage() {
 }
 ```
 
-- [ ] **Step 2: Type-check, lint, and run the full test suite**
+- [x] **Step 2: Type-check, lint, and run the full test suite**
 
 Run (from `web/`):
 
@@ -597,7 +597,7 @@ npm test -- --run
 Expected: no type errors, no eslint errors, all tests pass (this task doesn't add or remove any
 Vitest tests, only UI wiring).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -622,7 +622,7 @@ EOF
 - Modify: `web/.env.example`
 - Modify: `web/README.md`
 
-- [ ] **Step 1: Add `AUTH_PASSWORD_HASH` to `web/.env.example`**
+- [x] **Step 1: Add `AUTH_PASSWORD_HASH` to `web/.env.example`**
 
 Current file:
 
@@ -645,7 +645,7 @@ Append two lines at the end:
 AUTH_PASSWORD_HASH=
 ```
 
-- [ ] **Step 2: Add a bullet to `web/README.md`**
+- [x] **Step 2: Add a bullet to `web/README.md`**
 
 In `web/README.md`, find this line (currently line 22):
 
@@ -661,7 +661,7 @@ Add a new bullet immediately after it:
   lewat `node scripts/hash-password.mjs "password-baru"`, salin hasilnya ke sini.
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
