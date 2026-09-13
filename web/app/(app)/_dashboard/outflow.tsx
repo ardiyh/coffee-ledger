@@ -1,5 +1,5 @@
-import { Fragment } from "react";
 import { formatGrams } from "@/lib/format";
+import { BarRow } from "./bar-row";
 
 const REASON_LABELS: Record<string, string> = {
   GIFT: "Dikasih orang",
@@ -31,28 +31,13 @@ export function Outflow({
       <p className="mt-1 font-body text-xs text-ink-faint">
         Persentase dihitung dari total yang keluar, bukan dari yang masuk.
       </p>
-      <div className="mt-6 grid grid-cols-[max-content_1fr] items-center gap-x-6 gap-y-3">
+      <div className="mt-6 space-y-4">
         {rows.map((r) => {
           const pct = max > 0 ? (r.grams / max) * 100 : 0;
           const share = total > 0 ? (r.grams / total) * 100 : 0;
           return (
-            <Fragment key={r.reason}>
-              <span className="whitespace-nowrap font-body text-sm text-ink">
-                {REASON_LABELS[r.reason] ?? r.reason}
-              </span>
-              <div
-                className="flex h-2 items-center"
-                style={{ width: "calc(100% - 6rem)" }}
-              >
-                <div
-                  className="h-2 shrink-0 rounded-r-[4px] bg-amber"
-                  style={{ width: `${pct}%` }}
-                />
-                <span className="pl-2 font-mono text-sm tabular-nums whitespace-nowrap text-ink-dim">
-                  {formatGrams(r.grams)} · {share.toFixed(0)}%
-                </span>
-              </div>
-            </Fragment>
+            <BarRow key={r.reason} label={REASON_LABELS[r.reason] ?? r.reason}
+              percent={pct} value={`${formatGrams(r.grams)} · ${share.toFixed(0)}%`} />
           );
         })}
       </div>

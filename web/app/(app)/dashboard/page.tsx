@@ -35,6 +35,7 @@ export default async function DashboardPage() {
         <>
           <StockBars
             rows={activeLots.map((l) => ({
+              id: l.lot.id,
               name: l.lot.name,
               stock: l.stock,
               roastDate: l.lot.roastDate,

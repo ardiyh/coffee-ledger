@@ -12,7 +12,7 @@ export function NavLinks({ items }: { items: readonly NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-6 font-body text-sm">
+    <nav aria-label="Navigasi utama" className="col-span-2 row-start-2 flex flex-wrap items-center gap-x-6 gap-y-2 font-body text-sm">
       {items.map((item) => {
         const active = pathname === item.href;
         return (
