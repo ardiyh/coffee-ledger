@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, serial, integer, timestamp, doublePrecision, varchar, date, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, serial, integer, timestamp, numeric, varchar, date, pgEnum, check } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const txnkind = pgEnum("txnkind", ['IN', 'OUT'])
@@ -11,9 +11,11 @@ export const transaction = pgTable("transaction", {
 	ts: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
 	kind: txnkind().notNull(),
 	reason: txnreason().notNull(),
-	grams: doublePrecision().notNull(),
+	grams: numeric({ mode: "number" }).notNull(),
 	note: varchar(),
 }, (table) => [
+	check("transaction_grams_positive_finite", sql`${table.grams} > 0 AND ${table.grams} < 'Infinity'::numeric`),
+	check("transaction_kind_reason", sql`(${table.reason} = 'ACQUIRE' AND ${table.kind} = 'IN') OR (${table.reason} IN ('BREW', 'GIFT') AND ${table.kind} = 'OUT') OR ${table.reason} = 'ADJUST'`),
 	index("ix_transaction_lot_id").using("btree", table.lotId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.lotId],

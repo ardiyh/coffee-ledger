@@ -107,6 +107,25 @@ export async function getLot(db: LedgerDb, lotId: number): Promise<Lot | null> {
   return row ? mapLot(row) : null;
 }
 
+/** One SQL statement: both inserts commit together, including over neon-http. */
+export async function addLotWithInitialStock(
+  db: LedgerDb,
+  newLot: NewLot,
+  grams: number,
+): Promise<Lot> {
+  const now = new Date().toISOString();
+  const created = db.$with("created_lot").as(
+    db.insert(lot).values({ ...newLot, createdAt: now }).returning(),
+  );
+  const acquired = db.$with("initial_stock", { id: transaction.id }).as(
+    rawSql`INSERT INTO ${transaction} (lot_id, ts, kind, reason, grams, note)
+      SELECT ${created.id}, ${now}::timestamptz, 'IN', 'ACQUIRE', ${String(grams)}::numeric, 'stok awal'
+      FROM ${created} RETURNING id`,
+  );
+  const [row] = await db.with(created, acquired).select().from(created);
+  return mapLot(row);
+}
+
 export async function listLots(db: LedgerDb): Promise<Lot[]> {
   const rows = await db.select().from(lot);
   return rows.map(mapLot);
@@ -172,6 +191,16 @@ export interface LotStock {
   stock: number;
 }
 
+// Keep all balance arithmetic in Postgres NUMERIC, converting only the result
+// to a JS number for display. JS subtraction can incorrectly reject 0.3-0.1-0.2.
+const stockExpr = rawSql<string>`coalesce(sum(case when ${transaction.kind} = 'IN' then ${transaction.grams} else -${transaction.grams} end), 0)`;
+
+export async function currentStock(db: LedgerDb, lotId: number): Promise<number> {
+  const [row] = await db.select({ stock: stockExpr }).from(transaction)
+    .where(eq(transaction.lotId, lotId));
+  return Number(row.stock);
+}
+
 /**
  * Every lot with its current stock, in ONE aggregate query — a grouped sum,
  * left-joined so lots with zero transactions still come back with stock 0.
@@ -179,7 +208,6 @@ export interface LotStock {
  * that here is one of the reasons for this port.)
  */
 export async function stockSummary(db: LedgerDb): Promise<LotStock[]> {
-  const stockExpr = rawSql<string>`coalesce(sum(case when ${transaction.kind} = 'IN' then ${transaction.grams} else -${transaction.grams} end), 0)`;
   const rows = await db
     .select({ lot, stock: stockExpr })
     .from(lot)
@@ -235,18 +263,15 @@ export async function outflowByReason(db: LedgerDb): Promise<OutflowRow[]> {
 }
 
 export async function giftsByRecipient(db: LedgerDb): Promise<RecipientRow[]> {
+  const label = rawSql`coalesce(nullif(btrim(${transaction.note}), ''), '(tanpa catatan)')`;
   const rows = await db
-    .select({ note: transaction.note, grams: transaction.grams })
+    .select({
+      recipient: rawSql<string>`(array_agg(${label} order by ${transaction.ts}, ${transaction.id}))[1]`,
+      grams: sum(transaction.grams),
+    })
     .from(transaction)
-    .where(eq(transaction.reason, "GIFT"));
-
-  const byKey = new Map<string, RecipientRow>();
-  for (const r of rows) {
-    const label = (r.note ?? "").trim() || "(tanpa catatan)";
-    const key = label.toLowerCase();
-    const existing = byKey.get(key);
-    if (existing) existing.grams += r.grams;
-    else byKey.set(key, { recipient: label, grams: r.grams });
-  }
-  return [...byKey.values()].sort((a, b) => b.grams - a.grams);
+    .where(eq(transaction.reason, "GIFT"))
+    .groupBy(rawSql`lower(${label})`);
+  return rows.map((r) => ({ recipient: r.recipient, grams: Number(r.grams) }))
+    .sort((a, b) => b.grams - a.grams);
 }

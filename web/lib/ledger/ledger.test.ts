@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { sql } from "drizzle-orm";
 
 import * as relations from "./relations";
 import type { LedgerDb, Lot } from "./repository";
@@ -19,6 +20,11 @@ import { composeLotName, daysSince } from "../format";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DRIZZLE_DIR = path.resolve(__dirname, "../../drizzle");
+const clients: PGlite[] = [];
+
+afterEach(async () => {
+  await Promise.all(clients.splice(0).map((client) => client.close()));
+});
 
 /**
  * A fresh, empty PGlite database per test — mirrors the Python conftest.py
@@ -30,6 +36,7 @@ const DRIZZLE_DIR = path.resolve(__dirname, "../../drizzle");
  */
 async function freshDb(): Promise<LedgerDb> {
   const client = new PGlite();
+  clients.push(client);
   const db: LedgerDb = drizzle(client, { schema: { ...schema, ...relations } });
 
   const migrations = readdirSync(DRIZZLE_DIR)
@@ -330,7 +337,7 @@ describe("addLotWithInitialStock", () => {
     expect(txns[0].grams).toBe(250);
   });
 
-  it("gram awal nol ditolak, tapi lot-nya tetap terbuat", async () => {
+  it("gram awal nol ditolak tanpa membuat lot", async () => {
     const db = await freshDb();
 
     await expect(service.addLotWithInitialStock(db, args, 0)).rejects.toThrow(
@@ -338,8 +345,94 @@ describe("addLotWithInitialStock", () => {
     );
 
     const lots = await service.listLots(db);
-    expect(lots.length).toBe(1);
-    expect(await service.currentStock(db, lots[0].id)).toBe(0);
+    expect(lots).toHaveLength(0);
+    expect(await service.history(db)).toHaveLength(0);
+  });
+
+  it("kegagalan menyimpan stok awal membatalkan lot juga", async () => {
+    const db = await freshDb();
+    await db.execute(sql`CREATE FUNCTION reject_initial_stock() RETURNS trigger
+      LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'simulated write failure'; END $$`);
+    await db.execute(sql`CREATE TRIGGER reject_initial_stock BEFORE INSERT ON "transaction"
+      FOR EACH ROW EXECUTE FUNCTION reject_initial_stock()`);
+
+    await expect(service.addLotWithInitialStock(db, args, 250)).rejects.toThrow();
+
+    expect(await service.listLots(db)).toHaveLength(0);
+    expect(await service.history(db)).toHaveLength(0);
+  });
+});
+
+describe("stock integrity", () => {
+  it.each([NaN, Infinity, -Infinity, 0, -1])("menolak gram %s di service", async (grams) => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await expect(service.recordAcquire(db, lot.id, grams)).rejects.toThrow(InvalidQuantityError);
+    expect(await service.history(db)).toHaveLength(0);
+  });
+
+  it("pengeluaran bersamaan tidak membuat saldo negatif", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 100);
+
+    const results = await Promise.allSettled([
+      service.recordBrew(db, lot.id, 80),
+      service.recordGift(db, lot.id, 80),
+    ]);
+
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((r) => r.status === "rejected");
+    expect(rejected?.status === "rejected" && rejected.reason).toBeInstanceOf(InsufficientStockError);
+    expect(await service.currentStock(db, lot.id)).toBe(20);
+    expect(await service.history(db, lot.id)).toHaveLength(2);
+  });
+
+  it.each([[0.3, 0.1, 0.2], [250.1, 18.2, 231.9]])("saldo %s dikurangi %s menyisakan %s tepat", async (initial, used, remaining) => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, initial);
+    await service.recordBrew(db, lot.id, used);
+    expect(await service.currentStock(db, lot.id)).toBe(remaining);
+    await service.recordBrew(db, lot.id, remaining);
+    expect(await service.currentStock(db, lot.id)).toBe(0);
+    expect((await service.stockSummary(db))[0].stock).toBe(0);
+  });
+
+  it("jumlah hadiah desimal tetap tepat", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 1);
+    await service.recordGift(db, lot.id, 0.1, "A");
+    await service.recordGift(db, lot.id, 0.2, " a ");
+    expect(await service.giftsByRecipient(db)).toEqual([{ recipient: "A", grams: 0.3 }]);
+    expect(await service.outflowByReason(db)).toEqual([{ reason: "GIFT", grams: 0.3 }]);
+  });
+
+  it.each(["0", "-1", "NaN", "Infinity", "-Infinity"])(
+    "database menolak gram %s dari penulis langsung", async (grams) => {
+      const db = await freshDb();
+      const lot = await sampleLot(db);
+      await expect(db.execute(sql`INSERT INTO "transaction" (lot_id, ts, kind, reason, grams)
+        VALUES (${lot.id}, now(), 'IN', 'ACQUIRE', ${grams})`)).rejects.toThrow();
+      expect(await service.history(db)).toHaveLength(0);
+    },
+  );
+
+  it("database menolak arah yang tidak sesuai alasan", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await expect(db.execute(sql`INSERT INTO "transaction" (lot_id, ts, kind, reason, grams)
+      VALUES (${lot.id}, now(), 'IN', 'BREW', 10)`)).rejects.toThrow();
+  });
+
+  it("database menolak pengeluaran berlebih dari penulis langsung", async () => {
+    const db = await freshDb();
+    const lot = await sampleLot(db);
+    await service.recordAcquire(db, lot.id, 10);
+    await expect(db.execute(sql`INSERT INTO "transaction" (lot_id, ts, kind, reason, grams)
+      VALUES (${lot.id}, now(), 'OUT', 'BREW', 11)`)).rejects.toThrow();
+    expect(await service.currentStock(db, lot.id)).toBe(10);
   });
 });
 

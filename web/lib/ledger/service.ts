@@ -68,26 +68,15 @@ export async function updateLot(
   return updated;
 }
 
-/**
- * Buat lot, dan kalau gram awal diberikan, catat sekalian ACQUIRE-nya.
- *
- * Sengaja tanpa rollback: kalau ACQUIRE gagal setelah lot terbuat, lot tetap
- * ada dengan stok nol. Membuat lot dan mencatat transaksi adalah dua fakta
- * terpisah di buku besar, dan lot berstok nol itu keadaan yang sah.
- *
- * `initialGrams` yang <= 0 ditolak oleh `record()`, bukan diabaikan diam-diam.
- * Form mengirim `undefined` kalau kolomnya dikosongkan.
- */
+/** Lot dan ACQUIRE awal disimpan atomik; kegagalan tidak meninggalkan lot kosong. */
 export async function addLotWithInitialStock(
   db: LedgerDb,
   args: NewLotArgs,
   initialGrams?: number,
 ): Promise<Lot> {
-  const lot = await addLot(db, args);
-  if (initialGrams !== undefined) {
-    await recordAcquire(db, lot.id, initialGrams, "stok awal");
-  }
-  return lot;
+  if (initialGrams === undefined) return addLot(db, args);
+  validateGrams(initialGrams);
+  return repo.addLotWithInitialStock(db, args, initialGrams);
 }
 
 export async function listLots(db: LedgerDb): Promise<Lot[]> {
@@ -140,25 +129,30 @@ async function record(
   reason: TxnReason,
   note?: string | null,
 ): Promise<Transaction> {
-  if (grams <= 0) {
-    throw new InvalidQuantityError(`grams harus > 0, dapat ${grams}`);
-  }
+  validateGrams(grams);
   if ((await repo.getLot(db, lotId)) === null) {
     throw new LotNotFoundError(`Lot id=${lotId} gak ditemukan`);
   }
-  // Deliberately no locking/transaction around this check-then-insert: the
-  // stock check and the write are two round trips, so two concurrent writers
-  // could in theory overdraw. Accepted: this app is single-user behind a
-  // login, so that race can't happen in practice.
-  if (kind === "OUT") {
-    const stock = await currentStock(db, lotId);
-    if (grams > stock) {
-      throw new InsufficientStockError(
-        `Stok lot ${lotId} cuma ${stock}g, gak bisa keluarin ${grams}g`,
-      );
+  // The database locks the lot and checks its exact numeric balance in the
+  // same transaction as the insert. An application-side check would race.
+  try {
+    return await repo.addTransaction(db, { lotId, kind, reason, grams, note: note ?? null });
+  } catch (error) {
+    // Drizzle wraps the driver's PostgreSQL error in `cause`.
+    const cause = error instanceof Error && error.cause ? error.cause : error;
+    if (typeof cause === "object" && cause !== null &&
+        "code" in cause && cause.code === "23514" &&
+        "constraint" in cause && cause.constraint === "transaction_stock_nonnegative") {
+      throw new InsufficientStockError("Stok tidak cukup. Muat ulang untuk melihat saldo terbaru.");
     }
+    throw error;
   }
-  return repo.addTransaction(db, { lotId, kind, reason, grams, note: note ?? null });
+}
+
+function validateGrams(grams: number): void {
+  if (!Number.isFinite(grams) || grams <= 0) {
+    throw new InvalidQuantityError("Gram harus berupa angka lebih dari nol.");
+  }
 }
 
 /**
@@ -178,8 +172,7 @@ export async function finishLot(
 }
 
 export async function currentStock(db: LedgerDb, lotId: number): Promise<number> {
-  const txns = await repo.transactionsFor(db, lotId);
-  return txns.reduce((total, t) => total + (t.kind === "IN" ? t.grams : -t.grams), 0);
+  return repo.currentStock(db, lotId);
 }
 
 /** Daftar transaksi (semua lot kalau lotId undefined/null), urut kronologis. */
