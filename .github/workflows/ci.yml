@@ -14,13 +14,16 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-      - run: uv sync
-      - run: uv run ruff check
-      - run: uv run pytest
+      - run: uv sync --frozen
+      - run: uv run --frozen ruff check
+      - run: uv run --frozen pytest
 
   web:
-    name: Web (eslint + vitest)
+    name: Web (lint + tests + typecheck + build)
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/coffee
+      AUTH_SECRET: ci-placeholder-not-for-real-sessions
     defaults:
       run:
         working-directory: web
@@ -34,3 +37,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run typecheck
+      - run: npm run build

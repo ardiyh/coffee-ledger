@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "next typegen && tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -19,14 +22,17 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@next/env": "16.3.4",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "jsdom": "^30.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.11"
