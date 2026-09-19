@@ -1,8 +1,4 @@
-export interface WorldCountry {
-  name: string;
-  lat: number;
-  lon: number;
-}
+import type { WorldCountry } from "./match-origin";
 
 /**
  * Titik pusat 38 provinsi Indonesia, buat perkiraan lokasi di peta lot aktif

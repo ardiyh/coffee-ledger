@@ -19,7 +19,7 @@
 **Files:**
 - Modify: `web/package.json`
 
-- [ ] **Step 1: Add the dependencies**
+- [x] **Step 1: Add the dependencies**
 
 In `web/package.json`, add to `"dependencies"`:
 
@@ -40,12 +40,12 @@ Add to `"devDependencies"`:
 
 (`react-simple-maps` ships its own types and already depends on `@types/d3-geo`, `@types/geojson`, and `@types/topojson-specification` transitively, so those don't need to be added explicitly. `topojson-client` itself ships no types, hence `@types/topojson-client` as an explicit devDependency.)
 
-- [ ] **Step 2: Install and verify**
+- [x] **Step 2: Install and verify**
 
 Run (from `web/`): `npm install`
 Expected: installs cleanly, no peer-dependency conflicts (react-simple-maps 5.x declares `"react": "^16.8.0 || 17.x || 18.x || 19.x"`, matching this project's React 19).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -72,7 +72,7 @@ EOF
 
 No test — this is a static data file (a literal array), nothing to assert beyond "it exists and has this shape," which the type system already covers.
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `web/lib/geo/provinces.ts`:
 
@@ -137,12 +137,12 @@ export const INDONESIA_PROVINCES: readonly WorldCountry[] = [
 ] as const;
 ```
 
-- [ ] **Step 2: Type-check**
+- [x] **Step 2: Type-check**
 
 Run (from `web/`): `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -168,7 +168,7 @@ EOF
 - Create: `web/lib/geo/match-origin.ts`
 - Test: `web/lib/geo/match-origin.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/lib/geo/match-origin.test.ts`:
 
@@ -235,12 +235,12 @@ describe("matchOrigin", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run (from `web/`): `npm test -- --run -t matchOrigin`
 Expected: FAIL — `Cannot find module './match-origin'` (the file doesn't exist yet).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `web/lib/geo/match-origin.ts`:
 
@@ -297,13 +297,13 @@ export function matchOrigin(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run (from `web/`): `npm test -- --run`
 Expected: all tests pass, including the 7 new ones in `match-origin.test.ts` (test count goes up
 by 7 from wherever it currently stands).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -333,7 +333,7 @@ Diverifikasi lewat `tsc --noEmit` di sini, dan pengecekan visual manual di Task 
 **Files:**
 - Create: `web/lib/geo/world-countries.ts`
 
-- [ ] **Step 1: Write the module**
+- [x] **Step 1: Write the module**
 
 Create `web/lib/geo/world-countries.ts`:
 
@@ -368,7 +368,7 @@ export const WORLD_COUNTRIES: WorldCountry[] = WORLD_COUNTRIES_GEOJSON.features.
 });
 ```
 
-- [ ] **Step 2: Type-check**
+- [x] **Step 2: Type-check**
 
 Run (from `web/`): `npx tsc --noEmit`
 Expected: no errors.
@@ -378,7 +378,7 @@ Expected: no errors.
 generic annotation is required; without it, `f.properties` types as `{}` and `f.properties.name`
 fails to compile.)
 
-- [ ] **Step 3: Sanity-check the computed data**
+- [x] **Step 3: Sanity-check the computed data**
 
 Run (from `web/`):
 ```bash
@@ -396,7 +396,7 @@ console.log('has Colombia:', names.includes('Colombia'));
 ```
 Expected: `total countries: 177`, all three `has ...` lines `true`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -422,7 +422,7 @@ EOF
 - Create: `web/lib/geo/initial-view.ts`
 - Test: `web/lib/geo/initial-view.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/lib/geo/initial-view.test.ts`:
 
@@ -468,12 +468,12 @@ describe("computeInitialView", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run (from `web/`): `npm test -- --run -t computeInitialView`
 Expected: FAIL — `Cannot find module './initial-view'`.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `web/lib/geo/initial-view.ts`:
 
@@ -520,12 +520,12 @@ export function computeInitialView(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run (from `web/`): `npm test -- --run`
 Expected: all tests pass, including the 5 new ones in `initial-view.test.ts`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -554,7 +554,7 @@ No automated test — komponen rendering peta interaktif, diverifikasi lewat `ts
 `eslint` di sini, dan pengecekan visual manual di Task 8. Konsisten dengan cakupan test yang
 ada di seluruh app ini (berhenti di layer logic, bukan rendering visual).
 
-- [ ] **Step 1: Replace the file contents**
+- [x] **Step 1: Replace the file contents**
 
 Replace the whole file `web/app/(app)/_dashboard/origin-map.tsx` with:
 
@@ -704,7 +704,7 @@ export function OriginMap({
 }
 ```
 
-- [ ] **Step 2: Type-check and lint**
+- [x] **Step 2: Type-check and lint**
 
 Run (from `web/`):
 ```bash
@@ -713,14 +713,14 @@ npx eslint "app/(app)/_dashboard/origin-map.tsx"
 ```
 Expected: no errors.
 
-- [ ] **Step 3: Run the full test suite (regression check)**
+- [x] **Step 3: Run the full test suite (regression check)**
 
 Run (from `web/`): `npm test -- --run`
 Expected: all tests still pass (this task doesn't add/remove Vitest tests, only rewrites a
 component nothing else imports besides the dashboard page, which isn't touched — its prop
 contract, `{ lots: {name, stock, origin}[] }`, is unchanged).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
@@ -749,7 +749,7 @@ EOF
 - Delete: `web/lib/geo/indonesia.json`
 - Modify: `web/lib/regions.ts` (hapus `findRegion`, pertahankan `CoffeeRegion` dan `COFFEE_REGIONS`)
 
-- [ ] **Step 1: Confirm nothing else references the files being deleted**
+- [x] **Step 1: Confirm nothing else references the files being deleted**
 
 Run (from repo root):
 ```bash
@@ -759,13 +759,13 @@ Expected output: only `web/lib/regions.ts` (the `findRegion` definition itself, 
 Step 3 below). If anything else shows up, STOP — something changed since this plan was
 written; find out what it is before deleting.
 
-- [ ] **Step 2: Delete the two dead files**
+- [x] **Step 2: Delete the two dead files**
 
 ```bash
 git rm web/lib/geo/project.ts web/lib/geo/indonesia.json
 ```
 
-- [ ] **Step 3: Remove `findRegion` from `regions.ts`**
+- [x] **Step 3: Remove `findRegion` from `regions.ts`**
 
 In `web/lib/regions.ts`, the current file ends with:
 
@@ -827,7 +827,7 @@ Replace it with:
  */
 ```
 
-- [ ] **Step 4: Type-check, lint, and run the full test suite**
+- [x] **Step 4: Type-check, lint, and run the full test suite**
 
 Run (from `web/`):
 ```bash
@@ -837,7 +837,7 @@ npm test -- --run
 ```
 Expected: no type errors, no eslint errors, all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/hilmi/orca/workspaces/Coffee/CoffeeData
