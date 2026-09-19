@@ -51,6 +51,8 @@ export default async function DashboardPage() {
               name: l.lot.name,
               stock: l.stock,
               roastDate: l.lot.roastDate,
+              processMethod: l.lot.processMethod,
+              roastProfile: l.lot.roastProfile,
             }))}
           />
           <OriginMap
