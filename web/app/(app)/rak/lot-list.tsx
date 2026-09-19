@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { daysSince, formatGrams } from "@/lib/format";
 import { LotRow } from "./lot-row";
@@ -79,11 +79,13 @@ export function LotList({
   // -- so a confirmation can't disappear before it's read just because the
   // row it came from closed or a filter hid it.
   const [lastReceipt, setLastReceipt] = useState<{ receipt: TransactionReceipt; lotName: string } | null>(null);
-  // Set only by the hash effect below, to the lot id the URL hash currently
-  // points at (or null once nothing does). Deliberately separate from
-  // `openLotId` -- that one also changes from ordinary row clicks, and this
-  // state exists purely to gate the scroll+focus effect so it only fires
-  // for a hash-driven open, not every time any row opens.
+  // Set only by the hash effect below, to whichever lot id the URL hash
+  // most recently pointed at (stays at that id afterwards -- see
+  // `focusedHashLotIdRef` below for how repeats are deduped, not by
+  // resetting this back to null). Deliberately separate from `openLotId`
+  // -- that one also changes from ordinary row clicks, and this state
+  // exists purely to gate the scroll+focus effect so it only fires for a
+  // hash-driven open, not every time any row opens.
   const [hashLotId, setHashLotId] = useState<number | null>(null);
 
   function handleRecorded(receipt: TransactionReceipt, lotName: string) {
@@ -159,6 +161,19 @@ export function LotList({
     if (!queryAloneWouldMatch) setStatus("all");
   }
 
+  // Guards the effect below so the hash is only ever *applied* once per
+  // mount -- on the very first run, or on a genuine `hashchange` event --
+  // never merely because `lots` was swapped for a new array reference.
+  // `lots` changes on every unrelated `revalidatePath` refresh anywhere on
+  // this page (see the `stockRevision` comment above), and without this
+  // guard the effect below would replay the *original* hash on every one
+  // of those refreshes -- silently reopening lot A's panel over whatever
+  // lot B the user has since opened by hand. A ref (not state) because
+  // flipping it must not itself cause a re-render; it's only ever read or
+  // written from inside this effect, never during render, so it doesn't
+  // trip the project's react-hooks/refs rule.
+  const appliedInitialHashRef = useRef(false);
+
   // Reads `#lot-<id>` from the URL on mount, and again on every `hashchange`
   // -- so a dashboard bar's `/rak#lot-<id>` link opens that lot's panel
   // whether it's the initial navigation or the user is already on /rak and
@@ -175,6 +190,15 @@ export function LotList({
   // below), but broadening `status` too keeps the Status select honest
   // about what's actually on screen, instead of silently disagreeing with
   // an open, filtered-out row.
+  //
+  // This effect still depends on `[lots]` -- so a genuine `hashchange`
+  // that fires after `lots` has moved on always validates the id against
+  // the *current* lot list, not a stale one from mount -- but
+  // `appliedInitialHashRef` stops a `lots`-only re-run from calling
+  // `applyHash()` on its own; only the mount and the `hashchange` listener
+  // itself do that. `history.replaceState` then drops the hash from the
+  // URL once it's been consumed, so even a duplicate/late event can't
+  // reapply the same id twice.
   useEffect(() => {
     function applyHash() {
       const match = /^#lot-(\d+)$/.exec(window.location.hash);
@@ -185,23 +209,40 @@ export function LotList({
       setOpenLotId(id);
       setHashLotId(id);
       setStatus((current) => (matchesStatus(current, lot.stock) ? current : "all"));
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
-    applyHash();
+    if (!appliedInitialHashRef.current) {
+      appliedInitialHashRef.current = true;
+      applyHash();
+    }
     window.addEventListener("hashchange", applyHash);
     return () => window.removeEventListener("hashchange", applyHash);
   }, [lots]);
 
+  // Remembers which `hashLotId` value has already had its scroll+focus, so
+  // a later run of the effect below for an *unrelated* dependency change --
+  // `status`, e.g. the user working the Status dropdown right after landing
+  // here -- doesn't redo it and yank focus back off whatever control the
+  // user is actually using. A ref rather than resetting `hashLotId` itself
+  // back to null: doing the reset would mean calling setState
+  // unconditionally inside this effect purely to prevent it from firing
+  // again, which is exactly the cascading-render anti-pattern
+  // react-hooks/set-state-in-effect flags -- comparing against a ref here
+  // achieves the same "only once per hash target" result without it.
+  const focusedHashLotIdRef = useRef<number | null>(null);
+
   // Scrolls to and focuses the hash target once it's actually on screen.
-  // Split from the effect above so it re-runs after the state changes there
-  // have been committed -- by the time this runs, React has already
+  // Split from the effect above so it re-runs after the state changes
+  // there have been committed -- by the time this runs, React has already
   // rendered the target's row un-hidden (see `visible` below), so a plain
   // `getElementById` here finds it with no artificial delay needed.
   // `scrollIntoView` is guarded because it isn't implemented in the jsdom
   // environment these tests run under.
   useEffect(() => {
-    if (hashLotId === null) return;
+    if (hashLotId === null || focusedHashLotIdRef.current === hashLotId) return;
     const target = document.getElementById(`lot-${hashLotId}`);
     if (!target) return;
+    focusedHashLotIdRef.current = hashLotId;
     target.scrollIntoView?.({ block: "start" });
     target.focus();
   }, [hashLotId, status]);

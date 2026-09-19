@@ -392,4 +392,47 @@ describe("LotList navigasi lewat hash /rak#lot-<id>", () => {
     expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(false);
     expect(document.activeElement).toBe(document.getElementById("lot-2"));
   });
+
+  it("refresh lots yang tidak terkait tidak membajak balik ke panel dari hash lama", async () => {
+    // Reproduksi bug: buka lot 1 lewat hash, lalu user membuka lot 2 secara
+    // manual, lalu satu refresh data server yang sama sekali tidak terkait
+    // (array `lots` baru, isinya identik -- persis seperti yang terjadi
+    // setelah recordAction/editLotAction di lot lain lewat revalidatePath).
+    // Lot 2 harus tetap terbuka; hash lot 1 yang sudah "dipakai" tidak boleh
+    // "diputar ulang" hanya karena `lots` berganti referensi.
+    const user = userEvent.setup();
+    window.location.hash = "#lot-1";
+    const { rerender } = render(<LotList lots={lots} suggestions={suggestions} />);
+
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(false);
+
+    const [, openLot2] = screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" });
+    await user.click(openLot2);
+    expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(false);
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(true);
+
+    // Refresh yang tidak terkait: array baru, konten sama persis.
+    const refreshedLots = lots.map((l) => ({ ...l }));
+    rerender(<LotList lots={refreshedLots} suggestions={suggestions} />);
+
+    expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(false);
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(true);
+  });
+
+  it("mengganti Status setelah hash selesai dipakai tidak merebut fokus balik ke baris hash", async () => {
+    // Reproduksi bug minor: setelah hash membuka & fokus lot 1, mengganti
+    // Status (aksi user yang sama sekali tidak terkait) tidak boleh
+    // menyeret fokus balik ke baris lot 1.
+    const user = userEvent.setup();
+    window.location.hash = "#lot-1";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    const target1 = document.getElementById("lot-1") as HTMLElement;
+    expect(document.activeElement).toBe(target1);
+
+    const statusSelect = screen.getByLabelText("Status") as HTMLSelectElement;
+    await user.selectOptions(statusSelect, "all");
+
+    expect(document.activeElement).toBe(statusSelect);
+  });
 });
