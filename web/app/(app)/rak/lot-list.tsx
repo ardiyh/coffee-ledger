@@ -51,9 +51,10 @@ export function LotList({
   const [status, setStatus] = useState<Status>("active");
   const [sort, setSort] = useState<Sort>("name");
   const [openLotId, setOpenLotId] = useState<number | null>(null);
-  // Only tracks the *transaction* request's pending state (see the comment
-  // on LotRow's onPendingChange prop) -- used to stop other rows' open/Edit
-  // controls from being used while one lot's write is in flight.
+  // Tracks whichever write is in flight for the open lot -- transaction
+  // record OR edit save, LotRow reports both through the same callback (see
+  // LotRow's onPendingChange) -- used to stop other rows' open/Edit
+  // controls from being used while that write is in flight.
   const [pendingLotId, setPendingLotId] = useState<number | null>(null);
 
   const sorted = useMemo(() => {
