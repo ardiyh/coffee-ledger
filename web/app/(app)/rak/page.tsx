@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { distinctLotValues, stockSummary } from "@/lib/ledger/service";
 import { COFFEE_REGIONS } from "@/lib/regions";
 import { VARIETALS, PROCESS_METHODS } from "@/lib/coffee-vocab";
-import { LotRow } from "./lot-row";
+import { LotList, type LotListItem } from "./lot-list";
 import { AddLotForm } from "./add-lot-form";
 
 const merge = (used: string[], curated: readonly string[]) => [
@@ -30,20 +30,14 @@ export default async function RakPage() {
     timeZone: "Asia/Jakarta",
   }).format(new Date());
 
-  // Daftar lot lebih dulu, urut stok menurun lalu nama: ini yang dipakai
-  // hampir tiap hari. Tambah lot turun jadi <details> tertutup di bawahnya,
-  // karena lot ditambah cuma beberapa minggu sekali.
-  const sortedLots = [...lots].sort((a, b) => {
-    if (b.stock !== a.stock) return b.stock - a.stock;
-    return a.lot.name.localeCompare(b.lot.name);
-  });
-  const activeLots = sortedLots.filter(({ stock }) => stock > 0);
-  const emptyLots = sortedLots.filter(({ stock }) => stock <= 0);
-  const renderLot = ({ lot, stock }: (typeof lots)[number]) => (
-    <LotRow key={lot.id} lotId={lot.id} name={lot.name} origin={lot.origin}
-      varietal={lot.varietal} processMethod={lot.processMethod} roastProfile={lot.roastProfile}
-      roastDate={lot.roastDate} notes={lot.notes} stock={stock} suggestions={suggestions} />
-  );
+  // Search/sort/status-filter and which lot's panel is open all live in
+  // LotList (a client component) -- only plain, serializable fields cross
+  // that boundary, never `db`/`lot`/`Lot` server types.
+  const items: LotListItem[] = lots.map(({ lot, stock }) => ({
+    lotId: lot.id, name: lot.name, origin: lot.origin, varietal: lot.varietal,
+    processMethod: lot.processMethod, roastProfile: lot.roastProfile,
+    roastDate: lot.roastDate, notes: lot.notes, stock,
+  }));
 
   return (
     <div className="flex flex-col gap-10">
@@ -63,22 +57,17 @@ export default async function RakPage() {
           Tambah lot
         </a>
       </div>
-      {activeLots.length === 0 ? (
-        <div className="rounded-lg border border-line bg-panel p-10 text-center">
-          <p className="font-display text-lg font-medium text-ink">
-            {lots.length === 0 ? "Belum ada lot." : "Belum ada stok aktif."}
-          </p>
-          <p className="mt-2 font-body text-sm text-ink-dim">
-            Tambahkan lot di bawah atau isi kembali lot yang sudah habis.
-          </p>
-        </div>
-      ) : (
-        <section className="flex flex-col gap-4">
-          {activeLots.map(renderLot)}
-        </section>
-      )}
 
-      <details open={activeLots.length === 0}>
+      <LotList lots={items} suggestions={suggestions} />
+
+      {/*
+        Always reachable regardless of LotList's search/filter state --
+        rendered here, outside LotList, so nothing it does can hide this.
+        Open by default only when the shelf has literally no lots yet;
+        LotList now owns the active/empty split, so RakPage no longer
+        tries to guess whether the default "Aktif" view is empty.
+      */}
+      <details open={lots.length === 0}>
         <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
           Tambah lot baru
         </summary>
@@ -90,15 +79,6 @@ export default async function RakPage() {
           <AddLotForm todayISO={todayISO} suggestions={suggestions} />
         </section>
       </details>
-
-      {emptyLots.length > 0 ? (
-        <details>
-          <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
-            Lot habis ({emptyLots.length})
-          </summary>
-          <section className="mt-4 flex flex-col gap-4">{emptyLots.map(renderLot)}</section>
-        </details>
-      ) : null}
     </div>
   );
 }
