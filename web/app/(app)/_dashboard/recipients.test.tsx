@@ -18,9 +18,9 @@ const tenRows = [
 afterEach(cleanup);
 
 describe("Recipients", () => {
-  it("menjelaskan bahwa daftar dikelompokkan dari catatan transaksi hadiah", () => {
+  it("menjelaskan bahwa daftar dikelompokkan dari catatan transaksi hadiah, sepanjang waktu", () => {
     render(<Recipients rows={eightRows} />);
-    expect(screen.getByText("Dikelompokkan dari catatan transaksi hadiah")).toBeDefined();
+    expect(screen.getByText("Sepanjang waktu -- dikelompokkan dari catatan transaksi hadiah")).toBeDefined();
   });
 
   it("data kosong tidak merender bar atau disclosure", () => {

@@ -30,7 +30,7 @@ export function Recipients({
         Siapa yang dapat kopimu
       </h2>
       <p className="mb-6 mt-1 font-body text-xs text-ink-faint">
-        Dikelompokkan dari catatan transaksi hadiah
+        Sepanjang waktu -- dikelompokkan dari catatan transaksi hadiah
       </p>
       <div className="space-y-4">{shown.map(renderRow)}</div>
       {rest.length > 0 ? (

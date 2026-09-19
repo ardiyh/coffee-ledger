@@ -34,7 +34,10 @@ const lots: LotListItem[] = [
   },
 ];
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.location.hash = "";
+});
 beforeEach(() => vi.resetAllMocks());
 
 function panelIds(container: HTMLElement) {
@@ -325,5 +328,68 @@ describe("LotList lot menjadi habis", () => {
     // though the "Habis" filter alone wouldn't match it.
     expect(screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" })).toHaveLength(1);
     expect(screen.queryByText(/Stok sudah habis/)).toBeNull();
+  });
+});
+
+describe("LotList navigasi lewat hash /rak#lot-<id>", () => {
+  it("baris tiap lot punya target id dan tabIndex -1 untuk di-scroll/fokus", () => {
+    render(<LotList lots={lots} suggestions={suggestions} />);
+    const target1 = document.getElementById("lot-1") as HTMLElement;
+    expect(target1).not.toBeNull();
+    expect(target1.tabIndex).toBe(-1);
+  });
+
+  it("hash lot aktif membuka panelnya saat mount, dan memindahkan fokus ke situ", () => {
+    window.location.hash = "#lot-1";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    const panel1 = document.getElementById("lot-form-1") as HTMLElement;
+    expect(panel1.hidden).toBe(false);
+
+    const target1 = document.getElementById("lot-1") as HTMLElement;
+    expect(document.activeElement).toBe(target1);
+  });
+
+  it("hash lot yang stoknya habis melonggarkan status Aktif ke Semua supaya tetap terlihat", () => {
+    window.location.hash = "#lot-3";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    expect((screen.getByLabelText("Status") as HTMLSelectElement).value).toBe("all");
+    const panel3 = document.getElementById("lot-form-3") as HTMLElement;
+    expect(panel3.hidden).toBe(false);
+    expect(screen.getByRole("button", { name: "Catat untuk Toraja Washed" })).toBeDefined();
+  });
+
+  it("ID lot yang tidak ada di daftar tidak mengubah apa pun", () => {
+    window.location.hash = "#lot-999";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    // Status tetap default "Aktif", tidak ada panel yang kebuka.
+    expect((screen.getByLabelText("Status") as HTMLSelectElement).value).toBe("active");
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(true);
+    expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(true);
+    expect(screen.getByText("2 dari 3 lot")).toBeDefined();
+  });
+
+  it("hash yang formatnya bukan #lot-<angka> diabaikan", () => {
+    window.location.hash = "#bukan-lot";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    expect((screen.getByLabelText("Status") as HTMLSelectElement).value).toBe("active");
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(true);
+  });
+
+  it("hashchange setelah mount membuka lot lain -- link kedua atau navigasi kembali", async () => {
+    render(<LotList lots={lots} suggestions={suggestions} />);
+    // Belum ada panel yang terbuka saat mount (tidak ada hash).
+    expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(true);
+
+    await act(async () => {
+      window.location.hash = "#lot-2";
+      window.dispatchEvent(new Event("hashchange"));
+    });
+
+    expect((document.getElementById("lot-form-2") as HTMLElement).hidden).toBe(false);
+    expect(document.activeElement).toBe(document.getElementById("lot-2"));
   });
 });

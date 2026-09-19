@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { daysSince, formatGrams } from "@/lib/format";
 import { LotRow } from "./lot-row";
@@ -79,6 +79,12 @@ export function LotList({
   // -- so a confirmation can't disappear before it's read just because the
   // row it came from closed or a filter hid it.
   const [lastReceipt, setLastReceipt] = useState<{ receipt: TransactionReceipt; lotName: string } | null>(null);
+  // Set only by the hash effect below, to the lot id the URL hash currently
+  // points at (or null once nothing does). Deliberately separate from
+  // `openLotId` -- that one also changes from ordinary row clicks, and this
+  // state exists purely to gate the scroll+focus effect so it only fires
+  // for a hash-driven open, not every time any row opens.
+  const [hashLotId, setHashLotId] = useState<number | null>(null);
 
   function handleRecorded(receipt: TransactionReceipt, lotName: string) {
     setLastReceipt({ receipt, lotName });
@@ -152,6 +158,53 @@ export function LotList({
     setQuery("");
     if (!queryAloneWouldMatch) setStatus("all");
   }
+
+  // Reads `#lot-<id>` from the URL on mount, and again on every `hashchange`
+  // -- so a dashboard bar's `/rak#lot-<id>` link opens that lot's panel
+  // whether it's the initial navigation or the user is already on /rak and
+  // clicks a second such link (or uses browser back/forward, which also
+  // fires `hashchange`). Hash changes don't trigger a Next.js navigation or
+  // data refetch, so `hashchange` -- not a prop/searchParams change -- is
+  // the right signal to listen for here.
+  //
+  // An id that doesn't parse or doesn't match any current lot is left
+  // alone: no state changes, so the list stays exactly as it was.
+  //
+  // Same fallback reasoning as `clearSearch` above: forcing the lot open
+  // already makes its row visible regardless of `status` (see `visible`
+  // below), but broadening `status` too keeps the Status select honest
+  // about what's actually on screen, instead of silently disagreeing with
+  // an open, filtered-out row.
+  useEffect(() => {
+    function applyHash() {
+      const match = /^#lot-(\d+)$/.exec(window.location.hash);
+      if (!match) return;
+      const id = Number(match[1]);
+      const lot = lots.find((l) => l.lotId === id);
+      if (!lot) return;
+      setOpenLotId(id);
+      setHashLotId(id);
+      setStatus((current) => (matchesStatus(current, lot.stock) ? current : "all"));
+    }
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, [lots]);
+
+  // Scrolls to and focuses the hash target once it's actually on screen.
+  // Split from the effect above so it re-runs after the state changes there
+  // have been committed -- by the time this runs, React has already
+  // rendered the target's row un-hidden (see `visible` below), so a plain
+  // `getElementById` here finds it with no artificial delay needed.
+  // `scrollIntoView` is guarded because it isn't implemented in the jsdom
+  // environment these tests run under.
+  useEffect(() => {
+    if (hashLotId === null) return;
+    const target = document.getElementById(`lot-${hashLotId}`);
+    if (!target) return;
+    target.scrollIntoView?.({ block: "start" });
+    target.focus();
+  }, [hashLotId, status]);
 
   if (lots.length === 0) {
     return (
@@ -252,26 +305,37 @@ export function LotList({
           // explanatory copy that covers the "just went empty" case.
           const visible = matchedIds.has(lot.lotId) || isOpen;
           return (
-            <LotRow
-              key={lot.lotId}
-              lotId={lot.lotId}
-              name={lot.name}
-              origin={lot.origin}
-              varietal={lot.varietal}
-              processMethod={lot.processMethod}
-              roastProfile={lot.roastProfile}
-              roastDate={lot.roastDate}
-              notes={lot.notes}
-              stock={lot.stock}
-              suggestions={suggestions}
-              hidden={!visible}
-              isOpen={isOpen}
-              otherPending={pendingLotId !== null && pendingLotId !== lot.lotId}
-              stockRevision={stockRevision}
-              onOpenChange={(open) => handleOpenChange(lot.lotId, open)}
-              onPendingChange={(pending) => handlePendingChange(lot.lotId, pending)}
-              onRecorded={(receipt) => handleRecorded(receipt, lot.name)}
-            />
+            // Scroll/focus target for /rak#lot-<id> links (see the hash
+            // effects above) -- a thin wrapper instead of adding the id/
+            // tabIndex to LotRow's own root div, so this stays inside
+            // lot-list.tsx without touching lot-row.tsx. `hidden` mirrors
+            // LotRow's own (both end up `display:none` via the same UA
+            // rule, so this doesn't change what's visible) so the wrapper
+            // doesn't leave an empty gap in the list when its row is
+            // filtered out; `tabIndex={-1}` makes it focusable
+            // programmatically (via the effect above) without adding it to
+            // the tab order.
+            <div key={lot.lotId} id={`lot-${lot.lotId}`} tabIndex={-1} hidden={!visible}>
+              <LotRow
+                lotId={lot.lotId}
+                name={lot.name}
+                origin={lot.origin}
+                varietal={lot.varietal}
+                processMethod={lot.processMethod}
+                roastProfile={lot.roastProfile}
+                roastDate={lot.roastDate}
+                notes={lot.notes}
+                stock={lot.stock}
+                suggestions={suggestions}
+                hidden={!visible}
+                isOpen={isOpen}
+                otherPending={pendingLotId !== null && pendingLotId !== lot.lotId}
+                stockRevision={stockRevision}
+                onOpenChange={(open) => handleOpenChange(lot.lotId, open)}
+                onPendingChange={(pending) => handlePendingChange(lot.lotId, pending)}
+                onRecorded={(receipt) => handleRecorded(receipt, lot.name)}
+              />
+            </div>
           );
         })}
       </section>

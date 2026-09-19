@@ -29,7 +29,7 @@ export function Outflow({
         Ke mana kopimu pergi
       </h2>
       <p className="mt-1 font-body text-xs text-ink-faint">
-        Persentase dihitung dari total yang keluar, bukan dari yang masuk.
+        Sepanjang waktu -- persentase dihitung dari total yang keluar, bukan dari yang masuk.
       </p>
       <div className="mt-6 space-y-4">
         {rows.map((r) => {

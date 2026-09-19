@@ -103,4 +103,88 @@ describe("StockBars filter", () => {
     await user.click(screen.getByRole("button", { name: "Omniroast" }));
     expect(screen.getByText("Gak ada lot yang cocok dengan filter.")).toBeDefined();
   });
+
+  it("kombinasi filter tanpa hasil tetap punya jalan kembali lewat Reset filter", async () => {
+    const user = userEvent.setup();
+    render(<StockBars rows={rows} />);
+    await user.click(screen.getByRole("button", { name: "Washed" }));
+    await user.click(screen.getByRole("button", { name: "Omniroast" }));
+    expect(screen.getByText("Gak ada lot yang cocok dengan filter.")).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "Reset filter" }));
+    expect(renderedNames()).toEqual(["Lot Alpha", "Lot Beta", "Lot Charlie"]);
+  });
+});
+
+describe("StockBars link ke lot", () => {
+  it("nama lot adalah link ke /rak#lot-<id>", () => {
+    render(<StockBars rows={rows} />);
+    const link = screen.getByRole("link", { name: "Lot Alpha" });
+    expect(link.getAttribute("href")).toBe("/rak#lot-2");
+  });
+
+  it("tiap lot punya link dengan id-nya sendiri, bukan nama yang dipakai bareng", () => {
+    render(<StockBars rows={rows} />);
+    expect(screen.getByRole("link", { name: "Lot Charlie" }).getAttribute("href")).toBe("/rak#lot-1");
+    expect(screen.getByRole("link", { name: "Lot Beta" }).getAttribute("href")).toBe("/rak#lot-3");
+  });
+});
+
+describe("StockBars umur roast", () => {
+  it("umur lot lama tetap angka polos, tanpa label atau warna kualitas", () => {
+    // Lot Beta di-roast 2020-01-01 -- jauh lebih dari 30 hari yang lalu di
+    // tanggal berapa pun test ini jalan.
+    render(<StockBars rows={rows} />);
+    expect(screen.queryByText(/lewat masa prima/)).toBeNull();
+    expect(screen.getAllByText(/^\d+ hari sejak roast$/).length).toBe(rows.length);
+  });
+});
+
+describe("StockBars aria-pressed & Reset filter", () => {
+  it("chip mengumumkan state terpilihnya lewat aria-pressed", async () => {
+    const user = userEvent.setup();
+    render(<StockBars rows={rowsWithNulls} />);
+    const chip = screen.getByRole("button", { name: "Washed" });
+    expect(chip.getAttribute("aria-pressed")).toBe("false");
+    await user.click(chip);
+    expect(chip.getAttribute("aria-pressed")).toBe("true");
+    await user.click(chip);
+    expect(chip.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("Reset filter tidak tampil kalau belum ada filter aktif", () => {
+    render(<StockBars rows={rowsWithNulls} />);
+    expect(screen.queryByRole("button", { name: "Reset filter" })).toBeNull();
+  });
+
+  it("Reset filter menghapus filter proses dan profil roast sekaligus", async () => {
+    const user = userEvent.setup();
+    render(<StockBars rows={rowsWithNulls} />);
+    await user.click(screen.getByRole("button", { name: "Natural" }));
+    await user.click(screen.getByRole("button", { name: "Filter" }));
+    expect(renderedNames()).toEqual(["Lot Charlie"]);
+
+    await user.click(screen.getByRole("button", { name: "Reset filter" }));
+
+    expect(screen.getByRole("button", { name: "Natural" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("button", { name: "Filter" }).getAttribute("aria-pressed")).toBe("false");
+    // Default sort (stok menurun) balik berlaku, semua lot tampil lagi.
+    expect(renderedNames()).toEqual(["Lot Alpha", "Lot Beta", "Lot Charlie", "Lot Delta"]);
+  });
+});
+
+describe("StockBars jumlah hasil dan teks penjelas", () => {
+  it("menampilkan jumlah hasil dari total, dan ikut berubah saat difilter", async () => {
+    const user = userEvent.setup();
+    render(<StockBars rows={rowsWithNulls} />);
+    expect(screen.getByText("4 dari 4 lot")).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Washed" }));
+    expect(screen.getByText("1 dari 4 lot")).toBeDefined();
+  });
+
+  it("menjelaskan skala bar dan ruang lingkup filter", () => {
+    render(<StockBars rows={rows} />);
+    expect(screen.getByText("Panjang bar dibandingkan stok terbesar dalam hasil ini.")).toBeDefined();
+    expect(screen.getByText(/Filter hanya untuk Stok per lot/)).toBeDefined();
+  });
 });

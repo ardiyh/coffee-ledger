@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { daysSince, formatGrams } from "@/lib/format";
 import { BarRow } from "./bar-row";
 
@@ -34,19 +35,27 @@ function uniqueSorted(values: (string | null)[]): string[] {
 
 /**
  * Bar stok per lot, satu hue amber — bar mengodekan besaran, bukan identitas
- * lot, jadi tidak ada warna per lot di sini.
+ * lot, jadi tidak ada warna per lot di sini. Panjangnya relatif terhadap
+ * lot terbesar di *hasil filter saat ini*, bukan terhadap seluruh rak --
+ * makanya ada teks penjelas di bawah judul supaya angka relatif ini gak
+ * disalahartikan sebagai perbandingan absolut.
  *
  * Baris kedua kecil di bawah nama lot menampilkan umur roast sebagai angka
- * plus label, bukan lampu lalu lintas: skalanya kontinu dan ambang "lewat
- * masa prima" itu selera, jadi warna status merah/kuning/hijau akan
- * berbohong soal presisi yang sebenarnya tidak ada.
+ * polos (`daysSince`), bukan lampu lalu lintas atau label "lewat masa
+ * prima": skalanya kontinu dan gak ada ambang objektif yang membedakan lot
+ * "segar" dari yang "basi", jadi label atau warna status merah/kuning/hijau
+ * akan berbohong soal presisi yang sebenarnya tidak ada. Nama lot sendiri
+ * adalah link ke `/rak#lot-<id>` -- klik langsung membuka form pencatatan
+ * lot itu di Rak, lihat lot-list.tsx untuk sisi yang baca hash ini.
  *
  * Urutan default (stok menurun) sama seperti sebelum sort dipilihkan jadi
  * fitur -- pilihan sort/arah/filter cuma state komponen ini, reset tiap
  * reload. Filter proses & profil roast bersifat AND antar dimensi, OR di
  * dalam satu dimensi (checklist multi-value); opsinya diturunkan dari lot
  * yang lagi ada, bukan daftar tetap, jadi gak ada tombol filter yang
- * hasilnya pasti kosong.
+ * hasilnya pasti kosong. Filter ini cuma memengaruhi panel ini -- peta asal
+ * dan total di atas tetap menghitung semua lot aktif, jadi ada teks
+ * penjelas eksplisit di sini biar gak disangka ikut kefilter.
  */
 export function StockBars({
   rows,
@@ -83,7 +92,7 @@ export function StockBars({
 
   return (
     <section className="rounded-lg border border-line bg-panel p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-base font-medium text-ink">
           Stok per lot
         </h2>
@@ -113,8 +122,15 @@ export function StockBars({
         </div>
       </div>
 
+      <p className="mb-6 font-body text-xs text-ink-faint">
+        Panjang bar dibandingkan stok terbesar dalam hasil ini.
+      </p>
+
       {processOptions.length > 0 || roastProfileOptions.length > 0 ? (
         <div className="mb-6 flex flex-col gap-2">
+          <p className="font-body text-xs text-ink-faint">
+            Filter hanya untuk Stok per lot -- peta asal dan total di atas tetap menghitung semua lot.
+          </p>
           {processOptions.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-body text-xs uppercase tracking-wide text-ink-faint">
@@ -124,6 +140,7 @@ export function StockBars({
                 <button
                   key={p}
                   type="button"
+                  aria-pressed={processFilter.includes(p)}
                   onClick={() => setProcessFilter(toggleValue(p, processFilter))}
                   className={chipClass(processFilter.includes(p))}
                 >
@@ -141,6 +158,7 @@ export function StockBars({
                 <button
                   key={p}
                   type="button"
+                  aria-pressed={roastProfileFilter.includes(p)}
                   onClick={() => setRoastProfileFilter(toggleValue(p, roastProfileFilter))}
                   className={chipClass(roastProfileFilter.includes(p))}
                 >
@@ -149,8 +167,26 @@ export function StockBars({
               ))}
             </div>
           ) : null}
+          {processFilter.length > 0 || roastProfileFilter.length > 0 ? (
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  setProcessFilter([]);
+                  setRoastProfileFilter([]);
+                }}
+                className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
+              >
+                Reset filter
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
+
+      <p className="mb-4 font-body text-xs text-ink-faint">
+        {sorted.length} dari {rows.length} lot
+      </p>
 
       {sorted.length === 0 ? (
         <p className="font-body text-sm text-ink-faint">
@@ -161,14 +197,14 @@ export function StockBars({
           {sorted.map((r) => {
             const pct = maxStock > 0 ? (r.stock / maxStock) * 100 : 0;
             const age = daysSince(r.roastDate);
-            const pastPrime = age > 30;
             return (
               <BarRow key={r.id} percent={pct} value={formatGrams(r.stock)} label={
                 <>
-                  <span>{r.name}</span>
+                  <Link href={`/rak#lot-${r.id}`} className="text-ink hover:text-amber hover:underline">
+                    {r.name}
+                  </Link>
                   <p className="mt-1 font-body text-xs text-ink-faint">
                     {age} hari sejak roast
-                    {pastPrime ? " · lewat masa prima" : ""}
                   </p>
                 </>
               } />
