@@ -1,26 +1,50 @@
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { history, listLots } from "@/lib/ledger/service";
-import { formatGrams, formatWIB } from "@/lib/format";
-import type { TxnReason } from "@/lib/ledger/repository";
+import { HistoryList, type HistoryLotOption, type HistoryTxnItem } from "./history-list";
 
-const REASON_LABELS: Record<TxnReason, string> = {
-  ACQUIRE: "Masuk / beli",
-  BREW: "Seduh",
-  GIFT: "Kasih orang",
-  ADJUST: "Koreksi",
-};
+/**
+ * `?lot=ID` on the receipt banner's "Lihat riwayat" link (see
+ * rak/lot-list.tsx) should preselect that lot's filter here. Only a
+ * positive, finite integer counts as a valid id -- anything else (missing,
+ * non-numeric, negative, a `?lot=1&lot=2` array from a repeated param) is
+ * ignored safely rather than thrown, since this is a soft UX nicety, not a
+ * page that should ever error over its own query string.
+ */
+function parseLotId(raw: string | string[] | undefined): number | null {
+  if (typeof raw !== "string") return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && Number.isInteger(n) && n > 0 ? n : null;
+}
 
-export default async function HistoryPage() {
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   // Real auth boundary for this page — see lib/session.ts for why the
   // (app) layout's redirect isn't enough on its own.
   await requireSession();
 
+  // Next 16: searchParams is a Promise, must be awaited before reading it.
+  const params = await searchParams;
+  const initialLotId = parseLotId(params.lot);
+
   const [txns, lots] = await Promise.all([history(db), listLots(db)]);
-  const lotNames = new Map(lots.map((l) => [l.id, l.name]));
-  // service.history() returns rows in chronological (oldest-first) order;
-  // this page wants newest first.
-  const sorted = [...txns].sort((a, b) => b.ts.getTime() - a.ts.getTime());
+
+  const lotOptions: HistoryLotOption[] = lots.map((l) => ({ id: l.id, name: l.name }));
+  // Serialize `ts` to an ISO string at this server -> client boundary --
+  // HistoryList is a client component and only ever needs a plain,
+  // serializable prop shape, never a `Date` instance.
+  const transactions: HistoryTxnItem[] = txns.map((t) => ({
+    id: t.id,
+    lotId: t.lotId,
+    ts: t.ts.toISOString(),
+    kind: t.kind,
+    reason: t.reason,
+    grams: t.grams,
+    note: t.note,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,117 +54,18 @@ export default async function HistoryPage() {
           href="/history/csv"
           className="rounded-full border border-line px-4 py-2 font-body text-sm text-ink transition-colors hover:border-amber hover:text-amber"
         >
-          Unduh CSV
+          Unduh semua CSV
         </a>
       </div>
 
-      {sorted.length === 0 ? (
+      {transactions.length === 0 ? (
         <div className="rounded-lg border border-line bg-panel p-10 text-center">
           <p className="font-body text-sm text-ink-dim">
             Belum ada transaksi.
           </p>
         </div>
       ) : (
-        <>
-          {/*
-            Mobile: cards, not a horizontally-scrolled table. The five-column
-            table overflows a 390px screen wide enough that grams and notes —
-            the numbers that actually answer "how much moved" — sit past the
-            fold by default. Sign + grams lead each card; reason and time
-            follow; the note, if any, trails last.
-          */}
-          <ul className="flex flex-col gap-3 sm:hidden">
-            {sorted.map((t) => {
-              const isIn = t.kind === "IN";
-              return (
-                <li
-                  key={t.id}
-                  className="rounded-lg border border-line bg-panel p-4"
-                >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-body text-sm text-ink">
-                      {lotNames.get(t.lotId) ?? `Lot ${t.lotId}`}
-                    </span>
-                    <span
-                      className={`font-mono text-sm tabular-nums ${
-                        isIn ? "text-teal" : "text-clay-ink"
-                      }`}
-                    >
-                      {isIn ? "+" : "−"}
-                      {formatGrams(t.grams)}
-                    </span>
-                  </div>
-                  <p className="mt-1 font-body text-xs text-ink-faint">
-                    {REASON_LABELS[t.reason]} · {formatWIB(t.ts)}
-                  </p>
-                  {t.note ? (
-                    <p className="mt-1 font-body text-xs text-ink-dim">
-                      {t.note}
-                    </p>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="hidden overflow-x-auto rounded-lg border border-line bg-panel sm:block">
-            <table className="w-full border-collapse font-body text-sm">
-              <thead>
-                <tr className="border-b border-line text-left">
-                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                    Waktu
-                  </th>
-                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                    Lot
-                  </th>
-                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                    Alasan
-                  </th>
-                  <th className="px-4 py-3 text-right font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                    Gram
-                  </th>
-                  <th className="px-4 py-3 font-mono text-xs font-normal uppercase tracking-wide text-ink-faint">
-                    Catatan
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((t) => {
-                  // Sign is the primary encoding, colour reinforces it. Never
-                  // colour by reason — ADJUST goes both ways, so that would lie.
-                  const isIn = t.kind === "IN";
-                  return (
-                    <tr
-                      key={t.id}
-                      className="border-b border-line last:border-0"
-                    >
-                      <td className="whitespace-nowrap px-4 py-3 font-mono text-ink-dim">
-                        {formatWIB(t.ts)}
-                      </td>
-                      <td className="px-4 py-3 text-ink">
-                        {lotNames.get(t.lotId) ?? `Lot ${t.lotId}`}
-                      </td>
-                      <td className="px-4 py-3 text-ink-dim">
-                        {REASON_LABELS[t.reason]}
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums ${
-                          isIn ? "text-teal" : "text-clay-ink"
-                        }`}
-                      >
-                        {isIn ? "+" : "−"}
-                        {formatGrams(t.grams)}
-                      </td>
-                      <td className="px-4 py-3 text-ink-dim">
-                        {t.note ?? ""}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
+        <HistoryList transactions={transactions} lots={lotOptions} initialLotId={initialLotId} />
       )}
     </div>
   );
