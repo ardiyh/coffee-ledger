@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { signIn } from "@/auth";
 import { CredentialsForm } from "./credentials-form";
 
+export const metadata: Metadata = {
+  title: "Masuk — Coffee Ledger",
+};
+
 export default function LoginPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-ground px-4">
+    // `min-h-dvh` (not `flex-1` off the root layout's body, and not
+    // `min-h-screen`) so this page's height is self-contained and uses the
+    // *dynamic* viewport unit -- correct even when mobile browser chrome
+    // (address bar, etc.) shrinks the visible area. `justify-center`
+    // still centers the card on tall/normal viewports; on a short one
+    // (e.g. a landscape phone) where content needs more room than that,
+    // the box just grows past `min-h-dvh` and the page scrolls normally --
+    // nothing here clips or hides content, it only ever adds vertical
+    // padding/room, never a fixed/max height that could cut it off.
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-ground px-4 py-10">
       <div className="w-full max-w-sm rounded-lg border border-line bg-panel p-8 text-center">
         <h1 className="font-display text-2xl font-medium text-ink">
           Coffee Ledger
@@ -42,6 +56,6 @@ export default function LoginPage() {
       >
         ← Kembali ke beranda
       </Link>
-    </div>
+    </main>
   );
 }

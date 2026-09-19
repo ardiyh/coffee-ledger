@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { distinctLotValues, stockSummary } from "@/lib/ledger/service";
@@ -5,6 +6,10 @@ import { COFFEE_REGIONS } from "@/lib/regions";
 import { VARIETALS, PROCESS_METHODS } from "@/lib/coffee-vocab";
 import { LotList, type LotListItem } from "./lot-list";
 import { AddLotForm } from "./add-lot-form";
+
+export const metadata: Metadata = {
+  title: "Rak — Coffee Ledger",
+};
 
 const merge = (used: string[], curated: readonly string[]) => [
   ...used,
@@ -74,7 +79,7 @@ export default async function RakPage() {
         tries to guess whether the default "Aktif" view is empty.
       */}
       <details open={lots.length === 0}>
-        <summary className="cursor-pointer font-body text-sm font-medium text-ink-dim hover:text-ink">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center font-body text-sm font-medium text-ink-dim hover:text-ink">
           Tambah lot baru
         </summary>
         <section

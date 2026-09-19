@@ -15,12 +15,12 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 const selectClass =
-  "rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-sm text-ink focus:border-amber focus:outline-none";
+  "min-h-11 rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-base sm:text-sm text-ink focus:border-amber focus:outline-none";
 
 function chipClass(active: boolean) {
   return active
-    ? "rounded-full border border-amber bg-amber px-3 py-1 font-body text-xs font-semibold text-ground transition-colors"
-    : "rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber";
+    ? "inline-flex h-11 items-center justify-center rounded-full border border-amber bg-amber px-4 font-body text-xs font-semibold text-ground transition-colors"
+    : "inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber";
 }
 
 function toggleValue(value: string, selected: string[]): string[] {
@@ -115,7 +115,7 @@ export function StockBars({
             type="button"
             onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
             aria-label={sortDir === "asc" ? "Urut naik" : "Urut turun"}
-            className="rounded-full border border-line px-3 py-1.5 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
           >
             {sortDir === "asc" ? "↑ Naik" : "↓ Turun"}
           </button>
@@ -175,7 +175,7 @@ export function StockBars({
                   setProcessFilter([]);
                   setRoastProfileFilter([]);
                 }}
-                className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
               >
                 Reset filter
               </button>

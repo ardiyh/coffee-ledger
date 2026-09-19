@@ -28,6 +28,9 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-full flex-col">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-10 focus:rounded-md focus:bg-panel focus:px-4 focus:py-3 focus:text-ink focus:outline-2 focus:outline-amber">
+        Lewati ke konten
+      </a>
       <header className="border-b border-line bg-panel">
         <div className="mx-auto grid max-w-[960px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:flex sm:justify-between sm:gap-6 sm:px-6">
           <span className="font-display text-lg font-medium text-ink">
@@ -51,7 +54,7 @@ export default async function AppLayout({
           </form>
         </div>
       </header>
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <div className="mx-auto max-w-[960px] px-4 py-10 sm:px-6">{children}</div>
       </main>
     </div>

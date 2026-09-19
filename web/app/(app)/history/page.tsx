@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { history, listLots } from "@/lib/ledger/service";
 import { HistoryList, type HistoryLotOption, type HistoryTxnItem } from "./history-list";
+
+export const metadata: Metadata = {
+  title: "Riwayat — Coffee Ledger",
+};
 
 /**
  * `?lot=ID` on the receipt banner's "Lihat riwayat" link (see

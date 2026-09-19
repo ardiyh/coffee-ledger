@@ -8,7 +8,7 @@ import type { LotSuggestions } from "./types";
 const initialActionState: ActionState = {};
 
 const inputClass =
-  "w-full rounded-md border border-line bg-panel-2 px-3 py-2 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
+  "min-h-11 w-full rounded-md border border-line bg-panel-2 px-3 py-2 font-body text-base sm:text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
 
 export interface EditLotFormProps {
@@ -178,7 +178,7 @@ export function EditLotForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-amber px-5 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover disabled:opacity-50"
           >
             {pending ? "Menyimpan..." : "Simpan"}
           </button>
@@ -186,7 +186,7 @@ export function EditLotForm({
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="rounded-full border border-line px-5 py-2 font-body text-sm text-ink-dim transition-colors hover:border-clay hover:text-clay-ink disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 font-body text-sm text-ink-dim transition-colors hover:border-clay hover:text-clay-ink disabled:opacity-50"
           >
             Batal
           </button>

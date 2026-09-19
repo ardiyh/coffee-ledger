@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -7,6 +8,10 @@ import { StockBars } from "../_dashboard/stock-bars";
 import { Outflow } from "../_dashboard/outflow";
 import { Recipients } from "../_dashboard/recipients";
 import { OriginMap } from "../_dashboard/origin-map";
+
+export const metadata: Metadata = {
+  title: "Dashboard — Coffee Ledger",
+};
 
 export default async function DashboardPage() {
   // Real auth boundary for this page — see lib/session.ts for why the

@@ -9,7 +9,7 @@ import { ACTION_OPTIONS, type LotSuggestions } from "./types";
 const initialActionState: ActionState = {};
 
 const inputClass =
-  "rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
+  "min-h-11 rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-base sm:text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
 
 export interface LotRowProps {
@@ -240,7 +240,7 @@ export function LotRow({
             type="button"
             onClick={openForEdit}
             disabled={controlsDisabled}
-            className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
           >
             Edit
           </button>
@@ -250,7 +250,7 @@ export function LotRow({
             disabled={controlsDisabled}
             aria-expanded={isOpen && !editing}
             aria-controls={`lot-form-${lotId}`}
-            className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
           >
             {`Catat untuk ${name}`}
           </button>
@@ -292,7 +292,7 @@ export function LotRow({
               ) : null}
             </label>
             <button type="submit" disabled={pending}
-              className="rounded-full bg-amber px-5 py-2 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover disabled:opacity-50">
+              className="inline-flex h-11 items-center justify-center rounded-full bg-amber px-5 font-body text-sm font-semibold text-ground transition-colors hover:bg-amber-hover disabled:opacity-50">
               {pending ? "Menyimpan..." : "Catat"}
             </button>
             {state.error ? (

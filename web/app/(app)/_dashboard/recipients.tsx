@@ -35,7 +35,7 @@ export function Recipients({
       <div className="space-y-4">{shown.map(renderRow)}</div>
       {rest.length > 0 ? (
         <details className="mt-4">
-          <summary className="cursor-pointer font-body text-xs text-ink-dim hover:text-ink">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center font-body text-xs text-ink-dim hover:text-ink">
             Lihat semua penerima
           </summary>
           <div className="mt-4 space-y-4">{rest.map(renderRow)}</div>
