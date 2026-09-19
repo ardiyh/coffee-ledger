@@ -81,6 +81,7 @@ it("form tambah lot mempertahankan data saat gagal lalu reset setelah berhasil",
   await user.type(screen.getByLabelText("Origin"), "Gayo, Aceh");
   await user.type(screen.getByLabelText("Varietal"), "Typica");
   await user.type(screen.getByLabelText("Proses pasca panen"), "Natural");
+  await user.selectOptions(screen.getByLabelText("Profil roast"), "Espresso");
   await user.type(screen.getByLabelText("Stok awal, gram (opsional)"), "0");
   await user.click(screen.getByRole("button", { name: "Tambah lot" }));
   await screen.findByRole("alert");
@@ -90,4 +91,18 @@ it("form tambah lot mempertahankan data saat gagal lalu reset setelah berhasil",
   await user.click(screen.getByRole("button", { name: "Tambah lot" }));
   expect((await screen.findByRole("status")).textContent).toBe("Lot ditambahkan.");
   expect((screen.getByLabelText("Origin") as HTMLInputElement).value).toBe("");
+});
+
+it("form tambah lot mengirim roastProfile yang dipilih", async () => {
+  const user = userEvent.setup();
+  vi.mocked(addLotAction).mockResolvedValue({ success: true });
+  render(<AddLotForm todayISO="2026-09-01" suggestions={props.suggestions} />);
+  await user.type(screen.getByLabelText("Origin"), "Gayo, Aceh");
+  await user.type(screen.getByLabelText("Varietal"), "Typica");
+  await user.type(screen.getByLabelText("Proses pasca panen"), "Natural");
+  await user.selectOptions(screen.getByLabelText("Profil roast"), "Omniroast");
+  await user.click(screen.getByRole("button", { name: "Tambah lot" }));
+  await screen.findByRole("status");
+  const submitted = vi.mocked(addLotAction).mock.calls[0][1];
+  expect(submitted.get("roastProfile")).toBe("Omniroast");
 });

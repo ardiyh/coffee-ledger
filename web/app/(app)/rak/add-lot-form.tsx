@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { addLotAction, type ActionState } from "../actions";
 import { composeLotName } from "@/lib/format";
+import { ROAST_PROFILES } from "@/lib/coffee-vocab";
 import type { LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
@@ -20,6 +21,7 @@ export function AddLotForm({
 }) {
   const [origin, setOrigin] = useState("");
   const [processMethod, setProcessMethod] = useState("");
+  const [roastProfile, setRoastProfile] = useState("");
   const [special, setSpecial] = useState("");
   const [name, setName] = useState("");
   const [nameTouched, setNameTouched] = useState(false);
@@ -37,6 +39,7 @@ export function AddLotForm({
     if (result.success) {
       setOrigin("");
       setProcessMethod("");
+      setRoastProfile("");
       setSpecial("");
       setName("");
       setNameTouched(false);
@@ -111,6 +114,22 @@ export function AddLotForm({
               <option key={p} value={p} />
             ))}
           </datalist>
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className={labelClass}>Profil roast</span>
+          <select
+            name="roastProfile"
+            required
+            className={inputClass}
+            value={roastProfile}
+            onChange={(e) => setRoastProfile(e.target.value)}
+          >
+            <option value="" disabled>Pilih profil roast</option>
+            {ROAST_PROFILES.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </label>
 
         <label className="flex flex-col gap-1">
