@@ -36,3 +36,15 @@ export const PROCESS_METHODS: readonly string[] = [
   "Giling Basah",
   "Semi-washed",
 ] as const;
+
+/**
+ * Profil roast: tujuan seduh yang dituju, bukan tingkat kematangan roast.
+ * Set tertutup (dipilih lewat <select>, bukan teks bebas) -- kalau daftar ini
+ * berubah, constraint "lot_roast_profile_valid" di lib/ledger/schema.ts
+ * (dan migrasi SQL hasil generate-nya) harus disinkron manual.
+ */
+export const ROAST_PROFILES: readonly string[] = [
+  "Filter",
+  "Espresso",
+  "Omniroast",
+] as const;
