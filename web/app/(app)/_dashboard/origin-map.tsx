@@ -1,6 +1,13 @@
 "use client";
 
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+  ZoomableGroup,
+  useZoomPanContext,
+} from "react-simple-maps";
 import { matchOrigin } from "@/lib/geo/match-origin";
 import { computeInitialView } from "@/lib/geo/initial-view";
 import { WORLD_COUNTRIES, WORLD_COUNTRIES_GEOJSON } from "@/lib/geo/world-countries";
@@ -9,6 +16,25 @@ import { formatGrams } from "@/lib/format";
 
 const MIN_RADIUS = 4;
 const MAX_RADIUS = 10;
+
+/**
+ * <ZoomableGroup> applies its pan/zoom transform (translate + scale) to a
+ * <g> wrapping all its children, so a plain <circle r={...}> inside a
+ * <Marker> scales up visually 1:1 with the map's zoom level. This reads the
+ * live zoom scale `k` off the context ZoomableGroup provides (via
+ * useZoomPanContext, only readable from a descendant of ZoomableGroup — not
+ * from OriginMap itself, which renders ZoomableGroup rather than living
+ * inside it) and counter-scales by 1/k so the marker stays a constant `r`
+ * on screen regardless of zoom.
+ */
+function MapMarker({ r, fill, title }: { r: number; fill: string; title: string }) {
+  const { k } = useZoomPanContext();
+  return (
+    <circle r={r} fill={fill} transform={`scale(${1 / k})`}>
+      <title>{title}</title>
+    </circle>
+  );
+}
 
 /**
  * Peta origin lot aktif. Hanya lot berstok > 0 yang seharusnya dioper masuk
@@ -106,16 +132,20 @@ export function OriginMap({
             return (
               <Marker key={g.key} coordinates={[g.place.lon, g.place.lat]}>
                 {/*
+                  Title text is built here (not inside MapMarker) because
                   React requires <title> children to collapse to a single
-                  string (it errors on an array of nodes here, unlike other
-                  elements), so this is a template literal, not interpolated
-                  JSX text nodes. Hover-only, so it's a bonus for mouse
-                  users, not the way anyone is meant to read this — the list
-                  below carries the same numbers as always-visible text.
+                  string — it errors on an array of nodes here, unlike other
+                  elements — so this stays a template literal, not
+                  interpolated JSX text nodes. Hover-only, so it's a bonus
+                  for mouse users, not the way anyone is meant to read
+                  this — the list below carries the same numbers as
+                  always-visible text.
                 */}
-                <circle r={r} fill="var(--amber)">
-                  <title>{`${g.place.name} — ${formatGrams(g.stock)}`}</title>
-                </circle>
+                <MapMarker
+                  r={r}
+                  fill="var(--amber)"
+                  title={`${g.place.name} — ${formatGrams(g.stock)}`}
+                />
               </Marker>
             );
           })}
