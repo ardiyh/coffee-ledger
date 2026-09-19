@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { LedgerError } from "@/lib/ledger/errors";
+import type { Transaction } from "@/lib/ledger/repository";
 import {
   addLotWithInitialStock,
   recordAcquire,
@@ -14,8 +15,24 @@ import {
 } from "@/lib/ledger/service";
 
 /**
+ * What actually got written -- lets the UI say what was recorded, on which
+ * lot, and how much, instead of a bare "it worked". Shaped directly from the
+ * `Transaction` the service layer already returns from a successful record*
+ * call; nothing here is computed or re-queried.
+ */
+export interface TransactionReceipt {
+  id: number;
+  lotId: number;
+  kind: "IN" | "OUT";
+  reason: "ACQUIRE" | "BREW" | "GIFT" | "ADJUST";
+  grams: number;
+}
+
+/**
  * Shared shape for useActionState: no news is good news (undefined error),
  * `success` flips to true after a write so the form can show a confirmation.
+ * `receipt` is only ever populated by recordAction -- addLotAction and
+ * editLotAction don't produce a transaction, so they never set it.
  *
  * Only a type export — a "use server" file may only export async functions
  * (every other export becomes a server action reference), so the
@@ -25,6 +42,7 @@ import {
 export interface ActionState {
   error?: string;
   success?: boolean;
+  receipt?: TransactionReceipt;
 }
 
 export async function addLotAction(
@@ -97,22 +115,26 @@ export async function recordAction(
     return { error: "Gram harus berupa angka." };
   }
 
+  // Populated by every branch below except `default`, which returns before
+  // reaching the code that reads it.
+  let txn: Transaction;
+
   try {
     switch (kind) {
       case "ACQUIRE":
-        await recordAcquire(db, lotId, grams, note);
+        txn = await recordAcquire(db, lotId, grams, note);
         break;
       case "BREW":
-        await recordBrew(db, lotId, grams, note);
+        txn = await recordBrew(db, lotId, grams, note);
         break;
       case "GIFT":
-        await recordGift(db, lotId, grams, note);
+        txn = await recordGift(db, lotId, grams, note);
         break;
       case "ADJUST_IN":
-        await recordAdjust(db, lotId, grams, "IN", note);
+        txn = await recordAdjust(db, lotId, grams, "IN", note);
         break;
       case "ADJUST_OUT":
-        await recordAdjust(db, lotId, grams, "OUT", note);
+        txn = await recordAdjust(db, lotId, grams, "OUT", note);
         break;
       default:
         return { error: "Aksi gak dikenal." };
@@ -128,7 +150,20 @@ export async function recordAction(
   revalidatePath("/rak");
   revalidatePath("/history");
   revalidatePath("/dashboard");
-  return { success: true };
+
+  // Shaped straight from the transaction the write above already returned --
+  // no extra query after commit that could turn a successful write into a
+  // reported failure just because a follow-up read failed.
+  return {
+    success: true,
+    receipt: {
+      id: txn.id,
+      lotId: txn.lotId,
+      kind: txn.kind,
+      reason: txn.reason,
+      grams: txn.grams,
+    },
+  };
 }
 
 export async function editLotAction(
