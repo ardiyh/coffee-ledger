@@ -33,6 +33,12 @@ export default async function RakPage() {
   // Search/sort/status-filter and which lot's panel is open all live in
   // LotList (a client component) -- only plain, serializable fields cross
   // that boundary, never `db`/`lot`/`Lot` server types.
+  //
+  // Built fresh on every render (not memoized/cached) -- LotList's
+  // stockRevision mechanism (see its comment) relies on this array being a
+  // new reference exactly when server data actually changed, to know when
+  // "Memperbarui stok..." can clear. Wrapping this in any kind of caching
+  // would silently break that.
   const items: LotListItem[] = lots.map(({ lot, stock }) => ({
     lotId: lot.id, name: lot.name, origin: lot.origin, varietal: lot.varietal,
     processMethod: lot.processMethod, roastProfile: lot.roastProfile,

@@ -4,32 +4,13 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { recordAction, type ActionState, type TransactionReceipt } from "../actions";
 import { daysSince, formatGrams } from "@/lib/format";
 import { EditLotForm } from "./edit-lot-form";
-import type { LotSuggestions } from "./types";
+import { ACTION_OPTIONS, type LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
 
 const inputClass =
   "rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
-
-/**
- * Source of truth for both the "Aksi" select's options and, in LotList, the
- * human verb shown in the receipt banner -- so the two can't drift apart
- * into two different names for the same action.
- */
-export const ACTION_OPTIONS = [
-  { value: "ACQUIRE", label: "Masuk / beli" },
-  { value: "BREW", label: "Seduh" },
-  { value: "GIFT", label: "Kasih orang" },
-  { value: "ADJUST_IN", label: "Koreksi naik" },
-  { value: "ADJUST_OUT", label: "Koreksi turun" },
-] as const;
-
-export type RecordActionValue = (typeof ACTION_OPTIONS)[number]["value"];
-
-export const ACTION_LABELS = Object.fromEntries(
-  ACTION_OPTIONS.map((opt) => [opt.value, opt.label]),
-) as Record<RecordActionValue, string>;
 
 export interface LotRowProps {
   lotId: number;

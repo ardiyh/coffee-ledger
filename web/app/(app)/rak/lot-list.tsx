@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { daysSince, formatGrams } from "@/lib/format";
-import { ACTION_LABELS, LotRow, type RecordActionValue } from "./lot-row";
+import { LotRow } from "./lot-row";
 import type { TransactionReceipt } from "../actions";
-import type { LotSuggestions } from "./types";
+import { ACTION_LABELS, type LotSuggestions, type RecordActionValue } from "./types";
 
 /** Plain, serializable view of a lot -- no `db`/server types cross into this client component. */
 export interface LotListItem {
