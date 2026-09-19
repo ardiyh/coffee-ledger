@@ -1,11 +1,13 @@
 /**
  * Region kopi Indonesia yang dikenal, dengan koordinatnya.
  *
- * Dipakai dua tempat: `<datalist>` di form tambah lot (mempercepat input dan
- * mendorong penulisan origin yang konsisten), dan peta lot aktif di dashboard.
+ * Dipakai buat `<datalist>` di form tambah lot (mempercepat input dan
+ * mendorong penulisan origin yang konsisten). Peta lot aktif di dashboard
+ * pakai daftar terpisah (web/lib/geo/provinces.ts, level provinsi, bukan
+ * daerah spesifik) -- lihat docs/superpowers/specs/2026-09-19-origin-map-world-design.md
+ * §3 untuk alasannya.
  *
  * Kolom `origin` tetap teks bebas — daftar ini menawarkan, tidak memaksa.
- * Lot dengan origin di luar daftar cukup tidak muncul di peta.
  */
 export interface CoffeeRegion {
   /** Persis seperti yang masuk ke kolom `origin`. */
@@ -29,9 +31,3 @@ export const COFFEE_REGIONS: readonly CoffeeRegion[] = [
   { name: "Rantekarua, Sulawesi Selatan", lat: -2.9, lon: 119.9 },
   { name: "Wamena, Papua Pegunungan", lat: -4.1, lon: 138.95 },
 ] as const;
-
-/** Cocokkan teks origin ke region yang dikenal. Tidak peka besar-kecil huruf. */
-export function findRegion(origin: string): CoffeeRegion | undefined {
-  const needle = origin.trim().toLowerCase();
-  return COFFEE_REGIONS.find((r) => r.name.toLowerCase() === needle);
-}
