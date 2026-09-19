@@ -118,10 +118,14 @@ export function OriginMap({ lots }: { lots: Lot[] }) {
   function handleReset() {
     setView(computeInitialView(grouped.map((g) => g.place)));
   }
-  function handleMoveEnd(event: { coordinates?: [number, number]; zoom?: number }) {
+  // react-simple-maps calls this with (props, event) -- props carries the
+  // gesture's resulting coordinates/zoom, event is the raw DOM event we
+  // don't need. Named `props` (not `event`) to match the library's own name
+  // for this argument (ZoomPanCallbackProps).
+  function handleMoveEnd(props: { coordinates?: [number, number]; zoom?: number }) {
     setView((v) => ({
-      center: event.coordinates ?? v.center,
-      zoom: clampZoom(event.zoom ?? v.zoom),
+      center: props.coordinates ?? v.center,
+      zoom: clampZoom(props.zoom ?? v.zoom),
     }));
   }
 
@@ -244,7 +248,7 @@ export function OriginMap({ lots }: { lots: Lot[] }) {
           <ul className="flex flex-col gap-2">
             {unplaced.map((lot, index) => (
               <li
-                key={`${lot.name}-${index}`}
+                key={`${lot.name}-${lot.origin}-${index}`}
                 className="flex items-baseline justify-between gap-3 font-body text-sm"
               >
                 <span className="min-w-0 text-ink [overflow-wrap:anywhere]">
