@@ -281,6 +281,7 @@ describe("updateLot", () => {
       varietal: "Bourbon",
       roastDate: "2026-06-21",
       processMethod: "Natural",
+      roastProfile: "Espresso",
       notes: "typo dibetulin",
     });
 
@@ -288,6 +289,7 @@ describe("updateLot", () => {
     expect(updated.varietal).toBe("Bourbon");
     expect(updated.roastDate).toBe("2026-06-21");
     expect(updated.processMethod).toBe("Natural");
+    expect(updated.roastProfile).toBe("Espresso");
     expect(updated.notes).toBe("typo dibetulin");
 
     const stored = (await service.listLots(db)).find((l) => l.id === created.id);
@@ -458,6 +460,31 @@ describe("processMethod", () => {
 
     const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
     expect(stored?.processMethod).toBeNull();
+  });
+});
+
+describe("roastProfile", () => {
+  const args = {
+    name: "Gayo Wine",
+    origin: "Gayo, Aceh",
+    varietal: "Typica",
+    roastDate: "2026-09-01",
+  };
+
+  it("tersimpan waktu diberikan", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, { ...args, roastProfile: "Espresso" });
+
+    const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
+    expect(stored?.roastProfile).toBe("Espresso");
+  });
+
+  it("null waktu tidak diberikan", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, args);
+
+    const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
+    expect(stored?.roastProfile).toBeNull();
   });
 });
 

@@ -33,6 +33,10 @@ export interface NewLotArgs {
    * mengarang nilai untuk sesuatu yang memang tidak diketahui.
    */
   processMethod?: string | null;
+  /** Tujuan seduh: Filter, Espresso, atau Omniroast. Set tertutup (lihat
+   * ROAST_PROFILES di coffee-vocab.ts), tapi opsional di sini dengan alasan
+   * yang sama seperti processMethod di atas. */
+  roastProfile?: string | null;
   notes?: string | null;
 }
 
@@ -42,6 +46,7 @@ export async function addLot(db: LedgerDb, args: NewLotArgs): Promise<Lot> {
     origin: args.origin,
     varietal: args.varietal,
     processMethod: args.processMethod ?? null,
+    roastProfile: args.roastProfile ?? null,
     roastDate: args.roastDate,
     notes: args.notes ?? null,
   };
@@ -58,6 +63,7 @@ export async function updateLot(
     origin: args.origin,
     varietal: args.varietal,
     processMethod: args.processMethod ?? null,
+    roastProfile: args.roastProfile ?? null,
     roastDate: args.roastDate,
     notes: args.notes ?? null,
   };

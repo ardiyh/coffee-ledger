@@ -24,6 +24,7 @@ export interface Lot {
   origin: string;
   varietal: string;
   processMethod: string | null;
+  roastProfile: string | null;
   /** YYYY-MM-DD. Left as a string — it's a date-only value, so turning it into
    * a JS Date would tie it to a timezone it doesn't have. */
   roastDate: string;
@@ -46,6 +47,7 @@ export interface NewLot {
   origin: string;
   varietal: string;
   processMethod?: string | null;
+  roastProfile?: string | null;
   roastDate: string;
   notes?: string | null;
 }
@@ -68,6 +70,7 @@ function mapLot(row: typeof lot.$inferSelect): Lot {
     origin: row.origin,
     varietal: row.varietal,
     processMethod: row.processMethod,
+    roastProfile: row.roastProfile,
     roastDate: row.roastDate,
     createdAt: new Date(row.createdAt),
     notes: row.notes,
@@ -94,6 +97,7 @@ export async function addLot(db: LedgerDb, newLot: NewLot): Promise<Lot> {
       origin: newLot.origin,
       varietal: newLot.varietal,
       processMethod: newLot.processMethod ?? null,
+      roastProfile: newLot.roastProfile ?? null,
       roastDate: newLot.roastDate,
       createdAt: new Date().toISOString(),
       notes: newLot.notes ?? null,
@@ -143,6 +147,7 @@ export async function updateLot(
       origin: fields.origin,
       varietal: fields.varietal,
       processMethod: fields.processMethod ?? null,
+      roastProfile: fields.roastProfile ?? null,
       roastDate: fields.roastDate,
       notes: fields.notes ?? null,
     })
