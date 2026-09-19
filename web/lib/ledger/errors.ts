@@ -34,3 +34,12 @@ export class InsufficientStockError extends LedgerError {
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
+
+/** roastProfile di luar set yang diizinkan (lihat ROAST_PROFILES). */
+export class InvalidRoastProfileError extends LedgerError {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidRoastProfileError";
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}

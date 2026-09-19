@@ -13,6 +13,7 @@ import * as schema from "./schema";
 import {
   InsufficientStockError,
   InvalidQuantityError,
+  InvalidRoastProfileError,
   LotNotFoundError,
 } from "./errors";
 import * as service from "./service";
@@ -485,6 +486,28 @@ describe("roastProfile", () => {
 
     const stored = (await service.listLots(db)).find((l) => l.id === lot.id);
     expect(stored?.roastProfile).toBeNull();
+  });
+
+  it("addLot menolak nilai di luar set lewat InvalidRoastProfileError", async () => {
+    const db = await freshDb();
+    await expect(
+      service.addLot(db, { ...args, roastProfile: "Decaf" }),
+    ).rejects.toThrow(InvalidRoastProfileError);
+  });
+
+  it("updateLot menolak nilai di luar set lewat InvalidRoastProfileError", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, args);
+    await expect(
+      service.updateLot(db, lot.id, { ...args, roastProfile: "Decaf" }),
+    ).rejects.toThrow(InvalidRoastProfileError);
+  });
+
+  it("database menolak nilai di luar set dari penulis langsung", async () => {
+    const db = await freshDb();
+    const lot = await service.addLot(db, args);
+    await expect(db.execute(sql`UPDATE "lot" SET roast_profile = 'Decaf' WHERE id = ${lot.id}`))
+      .rejects.toThrow();
   });
 });
 

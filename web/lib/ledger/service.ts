@@ -7,6 +7,7 @@
 import {
   InsufficientStockError,
   InvalidQuantityError,
+  InvalidRoastProfileError,
   LotNotFoundError,
 } from "./errors";
 import * as repo from "./repository";
@@ -40,6 +41,27 @@ export interface NewLotArgs {
   notes?: string | null;
 }
 
+/**
+ * Drizzle membungkus error driver Postgres di `error.cause`. `roastProfile`
+ * gak divalidasi manual di sini -- constraint "lot_roast_profile_valid" di DB
+ * adalah satu-satunya sumber kebenaran soal nilai mana yang sah, jadi
+ * errornya cukup diterjemahkan jadi pesan yang ramah (pola yang sama dengan
+ * "transaction_stock_nonnegative" di record()).
+ */
+async function withRoastProfileCheck<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    const cause = error instanceof Error && error.cause ? error.cause : error;
+    if (typeof cause === "object" && cause !== null &&
+        "code" in cause && cause.code === "23514" &&
+        "constraint" in cause && cause.constraint === "lot_roast_profile_valid") {
+      throw new InvalidRoastProfileError("Profil roast tidak dikenal.");
+    }
+    throw error;
+  }
+}
+
 export async function addLot(db: LedgerDb, args: NewLotArgs): Promise<Lot> {
   const newLot: NewLot = {
     name: args.name,
@@ -50,7 +72,7 @@ export async function addLot(db: LedgerDb, args: NewLotArgs): Promise<Lot> {
     roastDate: args.roastDate,
     notes: args.notes ?? null,
   };
-  return repo.addLot(db, newLot);
+  return withRoastProfileCheck(() => repo.addLot(db, newLot));
 }
 
 export async function updateLot(
@@ -67,7 +89,7 @@ export async function updateLot(
     roastDate: args.roastDate,
     notes: args.notes ?? null,
   };
-  const updated = await repo.updateLot(db, lotId, fields);
+  const updated = await withRoastProfileCheck(() => repo.updateLot(db, lotId, fields));
   if (updated === null) {
     throw new LotNotFoundError(`Lot id=${lotId} gak ditemukan`);
   }
