@@ -27,7 +27,7 @@ const MAX_RADIUS = 10;
  * inside it) and counter-scales by 1/k so the marker stays a constant `r`
  * on screen regardless of zoom.
  */
-function MapMarker({ r, fill, title }: { r: number; fill: string; title: string }) {
+function MarkerDot({ r, fill, title }: { r: number; fill: string; title: string }) {
   const { k } = useZoomPanContext();
   return (
     <circle r={r} fill={fill} transform={`scale(${1 / k})`}>
@@ -132,16 +132,19 @@ export function OriginMap({
             return (
               <Marker key={g.key} coordinates={[g.place.lon, g.place.lat]}>
                 {/*
-                  Title text is built here (not inside MapMarker) because
-                  React requires <title> children to collapse to a single
-                  string — it errors on an array of nodes here, unlike other
-                  elements — so this stays a template literal, not
+                  Title text is built here, not inside MarkerDot, so that
+                  component stays generic (r/fill/title primitives, no
+                  knowledge of `place`/`stock`) — a decoupling choice, not
+                  something the <title> element forces. Separately: React
+                  requires <title> children to collapse to a single string
+                  (it errors on an array of nodes here, unlike other
+                  elements), so this is a template literal, not
                   interpolated JSX text nodes. Hover-only, so it's a bonus
                   for mouse users, not the way anyone is meant to read
                   this — the list below carries the same numbers as
                   always-visible text.
                 */}
-                <MapMarker
+                <MarkerDot
                   r={r}
                   fill="var(--amber)"
                   title={`${g.place.name} — ${formatGrams(g.stock)}`}
