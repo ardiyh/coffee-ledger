@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { formatGrams, formatWIB } from "@/lib/format";
+import { formatGrams, formatWIB, REASON_LABELS } from "@/lib/format";
 import type { TxnReason } from "@/lib/ledger/repository";
-
-export const REASON_LABELS: Record<TxnReason, string> = {
-  ACQUIRE: "Masuk / beli",
-  BREW: "Seduh",
-  GIFT: "Kasih orang",
-  ADJUST: "Koreksi",
-};
 
 /**
  * Plain, serializable view of a transaction -- no `Date` crosses the

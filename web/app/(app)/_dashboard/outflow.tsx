@@ -1,11 +1,6 @@
-import { formatGrams } from "@/lib/format";
+import { formatGrams, REASON_LABELS } from "@/lib/format";
+import type { TxnReason } from "@/lib/ledger/repository";
 import { BarRow } from "./bar-row";
-
-const REASON_LABELS: Record<string, string> = {
-  GIFT: "Dikasih orang",
-  BREW: "Diseduh",
-  ADJUST: "Koreksi",
-};
 
 /**
  * Ke mana kopi pergi, dipecah per alasan.
@@ -36,7 +31,7 @@ export function Outflow({
           const pct = max > 0 ? (r.grams / max) * 100 : 0;
           const share = total > 0 ? (r.grams / total) * 100 : 0;
           return (
-            <BarRow key={r.reason} label={REASON_LABELS[r.reason] ?? r.reason}
+            <BarRow key={r.reason} label={REASON_LABELS[r.reason as TxnReason] ?? r.reason}
               percent={pct} value={`${formatGrams(r.grams)} · ${share.toFixed(0)}%`} />
           );
         })}

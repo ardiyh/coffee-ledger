@@ -5,6 +5,8 @@
  * has to know about timezones.
  */
 
+import type { TxnReason } from "./ledger/repository";
+
 const WIB_TIME_ZONE = "Asia/Jakarta";
 
 const MONTHS = [
@@ -108,3 +110,15 @@ const GRAM_FORMATTER = new Intl.NumberFormat("id-ID");
 export function formatGrams(grams: number): string {
   return `${GRAM_FORMATTER.format(grams)} g`;
 }
+
+/**
+ * Single source of truth for TxnReason display labels -- Riwayat and the
+ * Dashboard's outflow panel used to keep separate copies of this (one active
+ * voice, one passive) that had already drifted apart in wording.
+ */
+export const REASON_LABELS: Record<TxnReason, string> = {
+  ACQUIRE: "Masuk / beli",
+  BREW: "Seduh",
+  GIFT: "Kasih orang",
+  ADJUST: "Koreksi",
+};
