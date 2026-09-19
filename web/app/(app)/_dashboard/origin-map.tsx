@@ -119,6 +119,7 @@ export function OriginMap({
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
+                  tabIndex={-1}
                   fill="var(--panel-2)"
                   stroke="var(--line)"
                   strokeWidth={0.5}
