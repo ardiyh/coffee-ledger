@@ -40,12 +40,13 @@ export async function addLotAction(
   const origin = String(formData.get("origin") ?? "").trim();
   const varietal = String(formData.get("varietal") ?? "").trim();
   const processMethod = String(formData.get("processMethod") ?? "").trim();
+  const roastProfile = String(formData.get("roastProfile") ?? "").trim();
   const roastDate = String(formData.get("roastDate") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (!name || !origin || !varietal || !processMethod || !roastDate) {
+  if (!name || !origin || !varietal || !processMethod || !roastProfile || !roastDate) {
     return {
-      error: "Nama, origin, varietal, proses, dan tanggal roast wajib diisi.",
+      error: "Nama, origin, varietal, proses, profil roast, dan tanggal roast wajib diisi.",
     };
   }
 
@@ -59,7 +60,7 @@ export async function addLotAction(
   try {
     await addLotWithInitialStock(
       db,
-      { name, origin, varietal, processMethod, roastDate, notes: notes || null },
+      { name, origin, varietal, processMethod, roastProfile, roastDate, notes: notes || null },
       initialGrams,
     );
   } catch (err) {
@@ -142,15 +143,16 @@ export async function editLotAction(
   const origin = String(formData.get("origin") ?? "").trim();
   const varietal = String(formData.get("varietal") ?? "").trim();
   const processMethod = String(formData.get("processMethod") ?? "").trim();
+  const roastProfile = String(formData.get("roastProfile") ?? "").trim();
   const roastDate = String(formData.get("roastDate") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!Number.isFinite(lotId) || lotId <= 0) {
     return { error: "Lot gak dikenal." };
   }
-  if (!name || !origin || !varietal || !processMethod || !roastDate) {
+  if (!name || !origin || !varietal || !processMethod || !roastProfile || !roastDate) {
     return {
-      error: "Nama, origin, varietal, proses, dan tanggal roast wajib diisi.",
+      error: "Nama, origin, varietal, proses, profil roast, dan tanggal roast wajib diisi.",
     };
   }
 
@@ -160,6 +162,7 @@ export async function editLotAction(
       origin,
       varietal,
       processMethod,
+      roastProfile,
       roastDate,
       notes: notes || null,
     });
