@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LotList, type LotListItem } from "./lot-list";
-import { recordAction, type ActionState } from "../actions";
+import { editLotAction, recordAction, type ActionState } from "../actions";
 
 // Same network-boundary mock as forms.test.tsx -- component tests exercise
 // the real forms, writes are covered elsewhere with Postgres.
@@ -65,6 +65,29 @@ describe("LotList pencarian", () => {
     await user.click(screen.getByRole("button", { name: "Hapus pencarian" }));
     expect(screen.queryByText("Tidak ada lot yang cocok")).toBeNull();
     expect((screen.getByLabelText("Cari") as HTMLInputElement).value).toBe("");
+  });
+
+  it("Hapus pencarian hanya membersihkan teks jika status saat ini saja sudah cukup", async () => {
+    const user = userEvent.setup();
+    render(<LotList lots={lots} suggestions={suggestions} />);
+    await user.type(screen.getByLabelText("Cari"), "tidak ada begini");
+    await user.click(screen.getByRole("button", { name: "Hapus pencarian" }));
+    // Default status "Aktif" alone already matches lot 1 & 2 -- clearing
+    // the query should be enough, status shouldn't silently change.
+    expect((screen.getByLabelText("Status") as HTMLSelectElement).value).toBe("active");
+  });
+
+  it("Hapus pencarian juga melonggarkan status kalau query saja tidak cukup", async () => {
+    const user = userEvent.setup();
+    // All three lots have stock, so "Habis" alone (no query) already
+    // matches nothing -- clearing the query can't be enough by itself.
+    const allActiveLots = lots.map((l) => ({ ...l, stock: l.stock > 0 ? l.stock : 50 }));
+    render(<LotList lots={allActiveLots} suggestions={suggestions} />);
+    await user.selectOptions(screen.getByLabelText("Status"), "empty");
+    await user.type(screen.getByLabelText("Cari"), "tidak ada begini");
+    await user.click(screen.getByRole("button", { name: "Hapus pencarian" }));
+    expect((screen.getByLabelText("Status") as HTMLSelectElement).value).toBe("all");
+    expect(screen.queryByText("Tidak ada lot yang cocok")).toBeNull();
   });
 });
 
@@ -175,6 +198,76 @@ describe("LotList panel tunggal dan draft", () => {
     expect(screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" })).toHaveLength(1);
     expect(screen.getByLabelText("Nama")).toBeDefined();
     expect(panel1.hidden).toBe(true);
+  });
+});
+
+describe("LotList draft edit bertahan", () => {
+  it("draft Edit lot pertama yang belum disimpan utuh setelah membuka Edit lot kedua lalu kembali", async () => {
+    const user = userEvent.setup();
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    // Capture both Edit buttons up front -- once lot 1's Edit opens, lot
+    // 1's own header (Edit button included) hides along with it, so
+    // re-querying by role afterwards would silently shift indices.
+    const [editLot1, editLot2] = screen.getAllByRole("button", { name: "Edit" });
+
+    // Reproduces the reviewer's repro: open lot 1's Edit, type an unsaved
+    // change, switch to lot 2's Edit, come back to lot 1's Edit -- the
+    // typed name must still be there, not reverted to "Gayo Natural".
+    await user.click(editLot1);
+    const nameInput1 = screen.getByLabelText("Nama") as HTMLInputElement;
+    await user.clear(nameInput1);
+    await user.type(nameInput1, "Draft belum disimpan");
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+
+    // Switch to lot 2's Edit -- lot 1's Edit panel must hide, not unmount.
+    await user.click(editLot2);
+
+    const edit1 = document.getElementById("lot-edit-1") as HTMLElement;
+    expect(edit1.hidden).toBe(true);
+    expect(document.body.contains(nameInput1)).toBe(true);
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+
+    const edit2 = document.getElementById("lot-edit-2") as HTMLElement;
+    expect(edit2.hidden).toBe(false);
+    expect(within(edit2).getByLabelText("Nama")).not.toBe(nameInput1);
+
+    // Come back to lot 1's Edit: same node, draft intact.
+    await user.click(editLot1);
+    expect(edit1.hidden).toBe(false);
+    expect(within(edit1).getByLabelText("Nama")).toBe(nameInput1);
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+  });
+
+  it("mencegah membuka lot lain selama penyimpanan edit berjalan, dan tidak macet setelahnya", async () => {
+    const user = userEvent.setup();
+    let finish!: (result: ActionState) => void;
+    vi.mocked(editLotAction).mockImplementation(
+      () => new Promise((resolve) => { finish = resolve; }),
+    );
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    // Capture every control up front, before lot 1's Edit hides its own
+    // header and shifts the "Edit" role query down to a single match.
+    const [editLot1, editLot2] = screen.getAllByRole("button", { name: "Edit" });
+    const [, catatLot2] = screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" });
+
+    await user.click(editLot1);
+    const edit1 = document.getElementById("lot-edit-1") as HTMLElement;
+    await user.click(within(edit1).getByRole("button", { name: "Simpan" }));
+
+    // Edit save in flight for lot 1 -- lot 2's controls are locked, exactly
+    // like the transaction-pending guard.
+    expect((catatLot2 as HTMLButtonElement).disabled).toBe(true);
+    expect((editLot2 as HTMLButtonElement).disabled).toBe(true);
+
+    await act(async () => finish({ success: true }));
+
+    // Once the save resolves, lot 2's controls unlock again -- the bubbled
+    // editPending flag didn't get stuck at `true` (see the comment on
+    // handleEditExit in lot-row.tsx for why that was a real risk).
+    expect((catatLot2 as HTMLButtonElement).disabled).toBe(false);
+    expect((editLot2 as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

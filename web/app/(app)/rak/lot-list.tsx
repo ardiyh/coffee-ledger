@@ -96,13 +96,15 @@ export function LotList({
   }
 
   function clearSearch() {
+    // "Hapus pencarian" should do just that in the common case (a search
+    // typo produced zero matches) -- silently also resetting the status
+    // filter would be a surprising side effect. It only broadens status to
+    // "Semua" as a fallback, when clearing the query alone still wouldn't
+    // show anything (e.g. the status filter itself is the reason, such as
+    // "Habis" with no empty lots).
+    const queryAloneWouldMatch = lots.some((lot) => matchesStatus(status, lot.stock));
     setQuery("");
-    // Both the search text and the status filter can independently produce
-    // a zero-result view; resetting only the query would leave a status
-    // filter (e.g. "Habis") silently still hiding everything. "Semua"
-    // guarantees a non-empty result as long as the shelf itself isn't
-    // empty.
-    setStatus("all");
+    if (!queryAloneWouldMatch) setStatus("all");
   }
 
   if (lots.length === 0) {

@@ -62,6 +62,10 @@ export function LotRow({
   const [kind, setKind] = useState<string | null>(null);
   const [grams, setGrams] = useState("");
   const [note, setNote] = useState("");
+  // Bubbled up from EditLotForm's own useActionState via onPendingChange
+  // below -- lets this row (and LotList) know an edit save is in flight
+  // even while EditLotForm is mounted-but-hidden (see the render below).
+  const [editPending, setEditPending] = useState(false);
 
   async function submit(prevState: ActionState, formData: FormData) {
     const result = await recordAction(prevState, formData);
@@ -74,29 +78,46 @@ export function LotRow({
   }
   const [state, formAction, pending] = useActionState(submit, initialActionState);
 
-  // Bubble this row's own transaction-pending state up so LotList can block
-  // switching to a different lot mid-submit. We can't do the same for
-  // EditLotForm's pending -- it doesn't expose one across its props
-  // boundary, and that file is out of scope here -- but EditLotForm already
-  // disables its own Batal button while saving, which is the same
-  // protective intent at a smaller scope.
+  // Bubble this row's own pending state up so LotList can block switching
+  // to a different lot mid-submit -- combines the transaction form's own
+  // useActionState pending with EditLotForm's (reported via its optional
+  // onPendingChange prop), since only one of the two can ever be the
+  // active panel at a time.
   useEffect(() => {
-    onPendingChange(pending);
+    onPendingChange(pending || editPending);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pending]);
+  }, [pending, editPending]);
 
   // No effect needed to reset `editing` when this row closes: every path
   // that sets isOpen to true (toggleOpen, openForEdit below) also sets
   // `editing` explicitly in the same handler, and every place that reads
-  // `editing` gates it behind `isOpen` first (render below, aria-expanded,
-  // the panel's `hidden`), so a stale `editing` value while closed is
-  // simply never observed.
+  // `editing` gates *visibility* behind `isOpen` first (render below,
+  // aria-expanded, the panels' `hidden`). EditLotForm itself, though,
+  // stays mounted for as long as `editing` is true regardless of `isOpen`
+  // -- see the render below -- so a stale `editing` left over from before
+  // this row was closed is exactly the point: it's what keeps the draft
+  // (and an in-flight save) alive while the user looks at another lot.
 
-  // Closing this row (or switching it away from "open") is only blocked
-  // while its own transaction request is in flight -- see the comment on
-  // onPendingChange above for why edit-pending isn't covered the same way.
-  const closeBlocked = isOpen && pending;
-  const controlsDisabled = otherPending || closeBlocked;
+  // `editPending` is reset here (not just from EditLotForm's own
+  // onPendingChange effect) because the moment `editing` flips to false,
+  // EditLotForm unmounts in the same commit -- its own pending-changed-to-
+  // false effect can race with that unmount and never fire. Resetting it
+  // eagerly, right alongside `setEditing(false)`, keeps it from getting
+  // stuck at `true` forever (which would permanently disable this row's
+  // and every other row's controls).
+  function handleEditExit() {
+    setEditing(false);
+    setEditPending(false);
+  }
+
+  // This row's own controls (Edit / "Catat untuk ...") are blocked
+  // whenever IT has a request in flight -- transaction or edit, open or
+  // closed -- not just while open, so the user can't sidestep the
+  // in-flight edit save by reopening this same row in record mode. Other
+  // rows are blocked via `otherPending`, fed by the bubbled-up pending
+  // state above.
+  const ownPending = pending || editPending;
+  const controlsDisabled = otherPending || ownPending;
 
   function toggleOpen() {
     if (controlsDisabled) return;
@@ -122,51 +143,63 @@ export function LotRow({
 
   return (
     <div hidden={hidden} className="rounded-lg border border-line bg-panel p-4">
-      {editing && isOpen ? (
-        <EditLotForm
-          lotId={lotId}
-          initial={{ name, origin, varietal, processMethod, roastProfile, roastDate, notes }}
-          suggestions={suggestions}
-          onCancel={() => setEditing(false)}
-          onSaved={() => setEditing(false)}
-        />
-      ) : (
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 flex-1 basis-40 [overflow-wrap:anywhere]">
-            <p className="font-body text-base text-ink">{name}</p>
-            <p className="mt-1 font-body text-xs text-ink-faint">
-              {origin} · {varietal} · {processMethod ?? "proses tidak dicatat"}
-              {" · "}
-              {roastProfile ?? "profil tidak dicatat"}
-              {" · "}
-              {daysSince(roastDate)} hari sejak roast
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <span className="font-mono text-lg tabular-nums text-ink">
-              {formatGrams(stock)}
-            </span>
-            <button
-              type="button"
-              onClick={openForEdit}
-              disabled={controlsDisabled}
-              className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={toggleOpen}
-              disabled={controlsDisabled}
-              aria-expanded={isOpen && !editing}
-              aria-controls={`lot-form-${lotId}`}
-              className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
-            >
-              {`Catat untuk ${name}`}
-            </button>
-          </div>
+      {/*
+        EditLotForm is mounted for as long as `editing` is true -- not
+        `editing && isOpen`. If it were unmounted the moment this row
+        closes (e.g. the user opens a different lot), its internal
+        useState(initial) draft, and any editLotAction request still in
+        flight, would be destroyed along with it. Instead it stays
+        mounted, just hidden, exactly like the transaction panel below and
+        the draft state (kind/grams/note) already on this component.
+      */}
+      {editing ? (
+        <div id={`lot-edit-${lotId}`} hidden={!isOpen}>
+          <EditLotForm
+            lotId={lotId}
+            initial={{ name, origin, varietal, processMethod, roastProfile, roastDate, notes }}
+            suggestions={suggestions}
+            onCancel={handleEditExit}
+            onSaved={handleEditExit}
+            onPendingChange={setEditPending}
+          />
         </div>
-      )}
+      ) : null}
+
+      <div hidden={isOpen && editing} className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 basis-40 [overflow-wrap:anywhere]">
+          <p className="font-body text-base text-ink">{name}</p>
+          <p className="mt-1 font-body text-xs text-ink-faint">
+            {origin} · {varietal} · {processMethod ?? "proses tidak dicatat"}
+            {" · "}
+            {roastProfile ?? "profil tidak dicatat"}
+            {" · "}
+            {daysSince(roastDate)} hari sejak roast
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="font-mono text-lg tabular-nums text-ink">
+            {formatGrams(stock)}
+          </span>
+          <button
+            type="button"
+            onClick={openForEdit}
+            disabled={controlsDisabled}
+            className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={toggleOpen}
+            disabled={controlsDisabled}
+            aria-expanded={isOpen && !editing}
+            aria-controls={`lot-form-${lotId}`}
+            className="rounded-full border border-line px-3 py-1 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
+          >
+            {`Catat untuk ${name}`}
+          </button>
+        </div>
+      </div>
 
       <div id={`lot-form-${lotId}`} hidden={!isOpen || editing}>
         {justEmpty ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { editLotAction, type ActionState } from "../actions";
 import { ROAST_PROFILES } from "@/lib/coffee-vocab";
 import type { LotSuggestions } from "./types";
@@ -25,6 +25,13 @@ export interface EditLotFormProps {
   suggestions: LotSuggestions;
   onCancel: () => void;
   onSaved: () => void;
+  /**
+   * Optional: lets a parent that keeps this form mounted-but-hidden (so an
+   * unsaved draft survives being hidden) also know when a save is in
+   * flight, e.g. to avoid letting the user navigate away from it. Purely
+   * additive -- omitting it changes nothing.
+   */
+  onPendingChange?: (pending: boolean) => void;
 }
 
 /**
@@ -39,6 +46,7 @@ export function EditLotForm({
   suggestions,
   onCancel,
   onSaved,
+  onPendingChange,
 }: EditLotFormProps) {
   const [fields, setFields] = useState(initial);
   // Sama seperti AddLotForm: keluar dari mode edit terjadi di sini, setelah
@@ -50,6 +58,11 @@ export function EditLotForm({
   }
 
   const [state, formAction, pending] = useActionState(submit, initialActionState);
+
+  useEffect(() => {
+    onPendingChange?.(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending]);
 
   return (
     <form action={formAction}>
