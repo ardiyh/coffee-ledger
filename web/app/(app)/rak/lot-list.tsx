@@ -84,6 +84,24 @@ export function LotList({
     setLastReceipt({ receipt, lotName });
   }
 
+  // A fresh, unique token whenever `lots` is actually swapped for a new
+  // array from the server (a revalidatePath-driven refetch) -- not on every
+  // LotList re-render, since local UI state above (search/sort/which panel
+  // is open) re-renders this component constantly without any new data
+  // arriving. Each LotRow gets this as `stockRevision` so it can tell "the
+  // server refresh landed" apart from "the stock number happens to look the
+  // same as before": comparing raw stock *values* can't do that when two
+  // transactions in a row net to zero (see LotRow's own comment).
+  //
+  // useMemo, not a ref/state pair updated from an effect: this project's
+  // lint rules disallow both reading/writing a ref during render
+  // (react-hooks/refs) and calling setState synchronously inside an effect
+  // (react-hooks/set-state-in-effect). useMemo's dependency array already
+  // gives the "did `lots` actually change" comparison for free, and a plain
+  // symbol is enough -- nothing needs to compare it as a number, only ever
+  // as "is this the same token as before".
+  const stockRevision = useMemo(() => Symbol(`stock-revision:${lots.length}`), [lots]);
+
   const sorted = useMemo(() => {
     const copy = [...lots];
     copy.sort((a, b) => {
@@ -249,6 +267,7 @@ export function LotList({
               hidden={!visible}
               isOpen={isOpen}
               otherPending={pendingLotId !== null && pendingLotId !== lot.lotId}
+              stockRevision={stockRevision}
               onOpenChange={(open) => handleOpenChange(lot.lotId, open)}
               onPendingChange={(pending) => handlePendingChange(lot.lotId, pending)}
               onRecorded={(receipt) => handleRecorded(receipt, lot.name)}

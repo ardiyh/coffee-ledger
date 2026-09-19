@@ -41,6 +41,14 @@ export interface LotRowProps {
   roastDate: string;
   notes: string | null;
   stock: number;
+  /**
+   * Bumped by LotList whenever `lots` is actually swapped for a fresh array
+   * from the server -- see LotList's own comment. Used (not `stock`
+   * itself) to detect that a post-submit refresh has landed, because two
+   * transactions in a row can net to a `stock` value identical to before
+   * either one, which a raw value comparison would never notice.
+   */
+  stockRevision: symbol;
   suggestions: LotSuggestions;
   /**
    * Hides the whole row via the `hidden` attribute rather than unmounting
@@ -70,7 +78,7 @@ export interface LotRowProps {
 }
 
 export function LotRow({
-  lotId, name, origin, varietal, processMethod, roastProfile, roastDate, notes, stock, suggestions,
+  lotId, name, origin, varietal, processMethod, roastProfile, roastDate, notes, stock, stockRevision, suggestions,
   hidden, isOpen, otherPending, onOpenChange, onPendingChange, onRecorded,
 }: LotRowProps) {
   // "editing" only matters while this row is open -- it picks which of the
@@ -85,22 +93,32 @@ export function LotRow({
   // below -- lets this row (and LotList) know an edit save is in flight
   // even while EditLotForm is mounted-but-hidden (see the render below).
   const [editPending, setEditPending] = useState(false);
-  // True from the moment a record succeeds until the `stock` prop actually
-  // changes -- see the effect below for why a prop change is the signal.
+  // True from the moment a record succeeds until a render with genuinely
+  // fresh data has been observed -- see the effect below for what counts
+  // as "fresh" and why, and LotList's `stockRevision` comment for where
+  // that signal comes from.
   const [awaitingStockRefresh, setAwaitingStockRefresh] = useState(false);
-  // The `stock` value that was current at the moment of the last successful
-  // submit. Once the (revalidation-driven) `stock` prop diverges from this,
-  // fresh data has landed and the "Memperbarui stok…" placeholder can clear.
-  const stockAtLastSuccessRef = useRef(stock);
+  // The `stockRevision` that was current at the moment of the last
+  // successful submit. Once the live prop diverges from this, a fresh
+  // render has landed and the "Memperbarui stok…" placeholder can clear.
+  //
+  // This deliberately keys off `stockRevision`, not `stock` itself: `stock`
+  // is just a number, and two transactions submitted back to back can have
+  // a combined effect of zero (e.g. an 18g BREW followed by an 18g
+  // ADJUST_IN) -- the refreshed `stock` would then be numerically identical
+  // to what was already showing, so comparing values would never detect
+  // that the refresh actually happened and this would stay stuck showing
+  // "Memperbarui stok…" forever. `stockRevision` changes independently of
+  // whether the number itself moved, so it doesn't have that blind spot.
+  const revisionAtLastSuccessRef = useRef(stockRevision);
 
   async function submit(prevState: ActionState, formData: FormData) {
-    const stockBeforeSubmit = stock;
     const result = await recordAction(prevState, formData);
     if (result.success) {
       setKind(null);
       setGrams("");
       setNote("");
-      stockAtLastSuccessRef.current = stockBeforeSubmit;
+      revisionAtLastSuccessRef.current = stockRevision;
       setAwaitingStockRefresh(true);
       if (result.receipt) onRecorded(result.receipt);
     }
@@ -110,15 +128,16 @@ export function LotRow({
 
   // `pending` flips back to false as soon as the action itself resolves,
   // which can land a render before Next.js's revalidatePath-driven refetch
-  // actually delivers a fresh `stock` prop -- there's no built-in signal for
-  // "the parent hasn't re-rendered with new data yet", so this compares the
-  // live prop against the value captured right before the successful
-  // submit: once they differ, the refresh has visibly landed.
+  // actually delivers fresh props -- there's no built-in signal for "the
+  // parent hasn't re-rendered with new data yet", so this watches
+  // `stockRevision` instead: once it differs from the value captured right
+  // before the successful submit, the refresh has visibly landed,
+  // regardless of what the resulting `stock` number turns out to be.
   useEffect(() => {
-    if (awaitingStockRefresh && stock !== stockAtLastSuccessRef.current) {
+    if (awaitingStockRefresh && stockRevision !== revisionAtLastSuccessRef.current) {
       setAwaitingStockRefresh(false);
     }
-  }, [stock, awaitingStockRefresh]);
+  }, [stockRevision, awaitingStockRefresh]);
 
   // Bubble this row's own pending state up so LotList can block switching
   // to a different lot mid-submit -- combines the transaction form's own

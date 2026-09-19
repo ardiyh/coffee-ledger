@@ -22,10 +22,16 @@ vi.mock("../actions", () => ({
 
 type BaseProps = Omit<LotRowProps, "hidden" | "isOpen" | "otherPending" | "onOpenChange" | "onPendingChange">;
 
+// `stockRevision` is an opaque token (LotList uses a fresh Symbol per
+// genuinely new `lots` array -- see its own comment) -- only distinctness
+// matters, never a particular value, so tests mint their own.
+const initialRevision = Symbol("initial");
+const refreshedRevision = Symbol("refreshed");
+
 const props: BaseProps = {
   lotId: 1, name: "Gayo Natural", origin: "Gayo, Aceh", varietal: "Typica",
   processMethod: "Natural", roastProfile: "Filter", roastDate: "2026-09-01",
-  notes: null, stock: 250,
+  notes: null, stock: 250, stockRevision: initialRevision,
   suggestions: { origins: [], varietals: [], processMethods: [] },
   onRecorded: () => {},
 };
@@ -197,10 +203,53 @@ describe("Rak transactions", () => {
     expect(screen.queryByText("232 g")).toBeNull();
     expect(screen.queryByText("250 g")).toBeNull();
 
-    // The parent re-renders with the server-refreshed stock once revalidation lands.
-    rerender(<Harness stock={232} />);
+    // The parent re-renders with the server-refreshed stock once
+    // revalidation lands -- LotList always bumps stockRevision alongside a
+    // genuinely fresh `lots` array (see LotList's own comment), so the
+    // harness does the same here.
+    rerender(<Harness stock={232} stockRevision={refreshedRevision} />);
     expect(screen.queryByText("Memperbarui stok…")).toBeNull();
     expect(screen.getByText("232 g")).toBeDefined();
+  });
+
+  it("tidak macet di 'Memperbarui stok…' saat dua transaksi net ke angka yang sama (regresi)", async () => {
+    // Reproduces the stuck-forever bug: an 18g BREW followed by an 18g
+    // ADJUST_IN nets to zero, so the eventually-refreshed stock is
+    // numerically identical to what was already showing. A mechanism that
+    // compares raw `stock` values would never see a difference and would
+    // leave "Memperbarui stok…" stuck even after fresh data arrived.
+    const user = userEvent.setup();
+    vi.mocked(recordAction)
+      .mockResolvedValueOnce({
+        success: true,
+        receipt: receipt({ id: 1, kind: "OUT", reason: "BREW", grams: 18 }),
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        receipt: receipt({ id: 2, kind: "IN", reason: "ADJUST", grams: 18 }),
+      });
+    const { rerender } = render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "Catat untuk Gayo Natural" }));
+
+    await user.type(screen.getByRole("spinbutton"), "18");
+    await user.click(screen.getByRole("button", { name: "Catat" }));
+    await waitFor(() => expect(screen.getByText("Memperbarui stok…")).toBeDefined());
+
+    // Second submit happens before the first one's server refresh has
+    // landed -- stockRevision is still `initialRevision` the whole time,
+    // same as LotList would leave it while no fresh `lots` array has
+    // arrived yet.
+    await user.type(screen.getByRole("spinbutton"), "18");
+    await user.click(screen.getByRole("button", { name: "Catat" }));
+    await waitFor(() => expect(recordAction).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("Memperbarui stok…")).toBeDefined();
+
+    // The refresh finally lands: stockRevision moves, but the net effect of
+    // both transactions was zero, so the number is unchanged from before
+    // either one. The placeholder must still resolve to the real number.
+    rerender(<Harness stock={250} stockRevision={refreshedRevision} />);
+    expect(screen.queryByText("Memperbarui stok…")).toBeNull();
+    expect(screen.getByText("250 g")).toBeDefined();
   });
 
   it("Batal membuang perubahan edit tanpa mencatat transaksi", async () => {
@@ -329,6 +378,46 @@ describe("LotList receipt banner", () => {
       expect(screen.getByRole("status").textContent).toContain("Masuk / beli 500 g · Gayo Natural tercatat.");
     });
     expect(screen.getAllByRole("status")).toHaveLength(1);
+  });
+
+  it("stok tidak macet di 'Memperbarui stok…' saat refresh dari server net ke angka semula (regresi)", async () => {
+    // End-to-end version of the same regression as the LotRow-level test
+    // above, but through LotList's real stockRevision derivation: a fresh
+    // `lots` array (a new reference, exactly like RakPage produces on every
+    // revalidatePath-driven refetch) whose stock is numerically identical
+    // to what was already showing, because the two transactions recorded
+    // in between happened to net to zero.
+    const user = userEvent.setup();
+    vi.mocked(recordAction)
+      .mockResolvedValueOnce({
+        success: true,
+        receipt: receipt({ id: 1, lotId: 1, kind: "OUT", reason: "BREW", grams: 18 }),
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        receipt: receipt({ id: 2, lotId: 1, kind: "IN", reason: "ADJUST", grams: 18 }),
+      });
+    const { rerender } = render(<LotList lots={oneLot} suggestions={props.suggestions} />);
+    await user.click(screen.getByRole("button", { name: "Catat untuk Gayo Natural" }));
+
+    await user.type(screen.getByRole("spinbutton"), "18");
+    await user.click(screen.getByRole("button", { name: "Catat" }));
+    await waitFor(() => expect(screen.getByText("Memperbarui stok…")).toBeDefined());
+
+    // The second submit lands before the first transaction's server
+    // refresh does -- `lots` hasn't changed reference yet, so LotRow is
+    // still waiting.
+    await user.type(screen.getByRole("spinbutton"), "18");
+    await user.click(screen.getByRole("button", { name: "Catat" }));
+    await waitFor(() => expect(recordAction).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("Memperbarui stok…")).toBeDefined();
+
+    // The server refresh finally lands with a brand-new `lots` array (a new
+    // object, not just the same one re-passed) whose stock is unchanged --
+    // this must still resolve the placeholder to the real number.
+    rerender(<LotList lots={[{ ...oneLot[0] }]} suggestions={props.suggestions} />);
+    expect(screen.queryByText("Memperbarui stok…")).toBeNull();
+    expect(screen.getByText("250 g")).toBeDefined();
   });
 });
 
