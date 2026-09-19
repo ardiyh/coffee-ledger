@@ -1,0 +1,2 @@
+ALTER TABLE "lot" ADD COLUMN "roast_profile" varchar;--> statement-breakpoint
+ALTER TABLE "lot" ADD CONSTRAINT "lot_roast_profile_valid" CHECK ("lot"."roast_profile" IS NULL OR "lot"."roast_profile" IN ('Filter', 'Espresso', 'Omniroast'));

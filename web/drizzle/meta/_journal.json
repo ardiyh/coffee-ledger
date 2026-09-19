@@ -15,6 +15,13 @@
       "when": 1788938142709,
       "tag": "0001_stock_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789823165391,
+      "tag": "0002_pink_jubilee",
+      "breakpoints": true
     }
   ]
 }

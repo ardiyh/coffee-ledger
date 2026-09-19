@@ -30,7 +30,10 @@ export const lot = pgTable("lot", {
 	origin: varchar().notNull(),
 	varietal: varchar().notNull(),
 	processMethod: varchar("process_method"),
+	roastProfile: varchar("roast_profile"),
 	roastDate: date("roast_date").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
 	notes: varchar(),
-});
+}, (table) => [
+	check("lot_roast_profile_valid", sql`${table.roastProfile} IS NULL OR ${table.roastProfile} IN ('Filter', 'Espresso', 'Omniroast')`),
+]);
