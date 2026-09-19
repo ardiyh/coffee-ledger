@@ -41,8 +41,8 @@ export default async function RakPage() {
   const emptyLots = sortedLots.filter(({ stock }) => stock <= 0);
   const renderLot = ({ lot, stock }: (typeof lots)[number]) => (
     <LotRow key={lot.id} lotId={lot.id} name={lot.name} origin={lot.origin}
-      varietal={lot.varietal} processMethod={lot.processMethod} roastDate={lot.roastDate}
-      notes={lot.notes} stock={stock} suggestions={suggestions} />
+      varietal={lot.varietal} processMethod={lot.processMethod} roastProfile={lot.roastProfile}
+      roastDate={lot.roastDate} notes={lot.notes} stock={stock} suggestions={suggestions} />
   );
 
   return (

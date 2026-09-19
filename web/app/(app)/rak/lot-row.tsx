@@ -26,6 +26,7 @@ export interface LotRowProps {
   origin: string;
   varietal: string;
   processMethod: string | null;
+  roastProfile: string | null;
   roastDate: string;
   notes: string | null;
   stock: number;
@@ -38,6 +39,7 @@ export function LotRow({
   origin,
   varietal,
   processMethod,
+  roastProfile,
   roastDate,
   notes,
   stock,
@@ -64,7 +66,7 @@ export function LotRow({
       {editing ? (
         <EditLotForm
           lotId={lotId}
-          initial={{ name, origin, varietal, processMethod, roastDate, notes }}
+          initial={{ name, origin, varietal, processMethod, roastProfile, roastDate, notes }}
           suggestions={suggestions}
           onCancel={() => setEditing(false)}
           onSaved={() => setEditing(false)}
@@ -75,6 +77,8 @@ export function LotRow({
             <p className="font-body text-base text-ink">{name}</p>
             <p className="mt-1 font-body text-xs text-ink-faint">
               {origin} · {varietal} · {processMethod ?? "proses tidak dicatat"}
+              {" · "}
+              {roastProfile ?? "profil tidak dicatat"}
               {" · "}
               {daysSince(roastDate)} hari sejak roast
             </p>

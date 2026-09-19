@@ -14,7 +14,8 @@ vi.mock("../actions", () => ({
 
 const props: LotRowProps = {
   lotId: 1, name: "Gayo Natural", origin: "Gayo, Aceh", varietal: "Typica",
-  processMethod: "Natural", roastDate: "2026-09-01", notes: null, stock: 250,
+  processMethod: "Natural", roastProfile: "Filter", roastDate: "2026-09-01",
+  notes: null, stock: 250,
   suggestions: { origins: [], varietals: [], processMethods: [] },
 };
 
@@ -70,6 +71,19 @@ describe("Rak transactions", () => {
     await act(async () => finish({ success: true }));
     expect(cancelDisabled).toBe(true);
     expect(screen.queryByRole("button", { name: "Simpan" })).toBeNull();
+  });
+
+  it("form edit lot terisi dari roastProfile awal dan mengirim perubahannya", async () => {
+    const user = userEvent.setup();
+    vi.mocked(editLotAction).mockResolvedValue({ success: true });
+    render(<LotRow {...props} />);
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect((screen.getByLabelText("Profil roast") as HTMLSelectElement).value).toBe("Filter");
+    await user.selectOptions(screen.getByLabelText("Profil roast"), "Omniroast");
+    await user.click(screen.getByRole("button", { name: "Simpan" }));
+    await waitFor(() => expect(editLotAction).toHaveBeenCalled());
+    const submitted = vi.mocked(editLotAction).mock.calls[0][1];
+    expect(submitted.get("roastProfile")).toBe("Omniroast");
   });
 });
 

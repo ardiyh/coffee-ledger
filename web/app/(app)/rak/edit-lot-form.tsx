@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { editLotAction, type ActionState } from "../actions";
+import { ROAST_PROFILES } from "@/lib/coffee-vocab";
 import type { LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
@@ -17,6 +18,7 @@ export interface EditLotFormProps {
     origin: string;
     varietal: string;
     processMethod: string | null;
+    roastProfile: string | null;
     roastDate: string;
     notes: string | null;
   };
@@ -118,6 +120,22 @@ export function EditLotForm({
               <option key={p} value={p} />
             ))}
           </datalist>
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className={labelClass}>Profil roast</span>
+          <select
+            name="roastProfile"
+            required
+            value={fields.roastProfile ?? ""}
+            onChange={(event) => setFields({ ...fields, roastProfile: event.target.value })}
+            className={inputClass}
+          >
+            <option value="" disabled>Pilih profil roast</option>
+            {ROAST_PROFILES.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </label>
 
         <label className="flex flex-col gap-1">
