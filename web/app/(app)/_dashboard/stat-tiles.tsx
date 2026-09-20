@@ -18,8 +18,8 @@ export function StatTiles({
   all: number;
 }) {
   return (
-    <section className="flex flex-col gap-4">
-      <div className="rounded-lg border border-line bg-panel p-6">
+    <section className="grid grid-cols-2 gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+      <div className="col-span-2 min-w-0 rounded-lg border border-line bg-panel p-6 sm:col-span-1">
         <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
           Total stok
         </p>
@@ -27,17 +27,15 @@ export function StatTiles({
           {formatGrams(total)}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <SecondaryStat label="Lot aktif" value={String(active)} />
-        <SecondaryStat label="Total lot" value={String(all)} />
-      </div>
+      <SecondaryStat label="Lot aktif" value={String(active)} />
+      <SecondaryStat label="Total lot" value={String(all)} />
     </section>
   );
 }
 
 function SecondaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-line bg-panel p-4">
+    <div className="flex min-w-0 flex-col justify-center rounded-lg border border-line bg-panel p-4 sm:p-6">
       <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
         {label}
       </p>

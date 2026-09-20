@@ -27,18 +27,22 @@ export function Hero() {
           </Link>
         </div>
       </Reveal>
-      <Reveal
-        delayMs={80}
-        className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel lg:w-[54%]"
-      >
-        <Image
-          src="/app-dashboard.png"
-          alt="Dashboard Coffee Ledger: total stok, bar per lot, dan peta asal lot aktif"
-          fill
-          priority
-          sizes="(min-width: 1024px) 54vw, 100vw"
-          className="object-cover object-top"
-        />
+      <Reveal delayMs={80} className="lg:w-[54%]">
+        <figure>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel">
+            <Image
+              src="/dashboard-preview.png"
+              alt="Dashboard Coffee Ledger: total stok, filter proses dan profil roast, serta bar stok per lot"
+              fill
+              priority
+              sizes="(min-width: 1100px) 550px, (min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-top"
+            />
+          </div>
+          <figcaption className="mt-3 font-body text-xs text-ink-faint">
+            Dashboard saat ini, dengan data contoh.
+          </figcaption>
+        </figure>
       </Reveal>
     </section>
   );

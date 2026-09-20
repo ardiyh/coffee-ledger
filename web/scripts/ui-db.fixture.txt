@@ -1,0 +1,30 @@
+// Isolated E2E adapter only; never copied to the application repository.
+import { PGlite } from "@electric-sql/pglite";
+import { drizzle } from "drizzle-orm/pglite";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import * as schema from "./ledger/schema";
+import * as relations from "./ledger/relations";
+
+const isolated = globalThis as typeof globalThis & { e2eClient?: Promise<PGlite> };
+isolated.e2eClient ??= (async () => {
+  const client = new PGlite();
+  const dir = path.join(process.cwd(), "drizzle");
+  for (const file of readdirSync(dir).filter(f => f.endsWith(".sql")).sort()) {
+    for (const stmt of readFileSync(path.join(dir, file), "utf8").split("--> statement-breakpoint").filter(s => s.trim())) await client.exec(stmt);
+  }
+  await client.exec(`
+    INSERT INTO lot (name, origin, varietal, process_method, roast_profile, roast_date, created_at)
+    VALUES ('Gayo Wine Natural', 'Gayo, Aceh', 'Typica', 'Natural', 'Filter', '2026-09-07', now()),
+           ('Kerinci Anaerobic Natural', 'Kerinci, Jambi', 'Andungsari', 'Natural', 'Espresso', '2026-09-11', now()),
+           ('El Salvador — Ease Coffee', 'El Salvador', 'Bourbon', 'Washed', 'Filter', '2026-09-10', now());
+    INSERT INTO "transaction" (lot_id, ts, kind, reason, grams, note)
+    VALUES (1, now(), 'IN', 'ACQUIRE', 250, 'stok awal'),
+           (2, now(), 'IN', 'ACQUIRE', 125, 'stok awal'),
+           (3, now(), 'IN', 'ACQUIRE', 80, 'stok awal');
+  `);
+  return client;
+})();
+export const db = drizzle(await isolated.e2eClient, { schema: { ...schema, ...relations } });
+
+export type Db = typeof db;

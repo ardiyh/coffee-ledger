@@ -1,8 +1,16 @@
 # Audit UI/UX Coffee Ledger
 
+Catatan terbaru: lihat [audit implementasi 20 September 2026](ui-ux-implementation-audit-2026-09-20.md)
+untuk empat temuan lanjutan, perbaikannya, dan hasil 198 tes. Angka pengujian
+di dokumen ini tetap merupakan hasil historis 13–14 September, bukan status
+rilis terbaru.
+
 13 September 2026. Panduan: `design-taste-frontend` untuk landing dan
 `redesign-existing-projects` untuk aplikasi. Mode: mempertahankan identitas.
 Variasi desain 3/10, intensitas gerak 2/10, kepadatan informasi 5/10.
+
+Status 14 September 2026: rekomendasi telah diterapkan dan diperiksa ulang.
+Temuan di bawah tetap dipertahankan sebagai catatan kondisi awal.
 
 ## Arah desain
 
@@ -111,5 +119,41 @@ dari warna teks saat ini tanpa menganggap angka ΔE lama berlaku pada warna baru
 3. Daftar pendamping peta, akses Tambah lot, dan bahasa login.
 4. Pembaruan screenshot serta keterangan landing setelah UI stabil.
 
-Dokumen ini mencatat temuan dan rekomendasi; audit ini belum menerapkan
-perubahan pada komponen UI.
+## Hasil tindak lanjut — 14 September 2026
+
+Saat pekerjaan dilanjutkan, commit hingga `9139dfa` sudah memuat perbaikan
+hover, navigasi, daftar Riwayat mobile, ringkasan stok, daftar origin,
+akses Tambah lot, dan bahasa login. Perbaikan tersebut dipertahankan.
+
+Penyempurnaan lanjutan:
+
+- Ringkasan Dashboard menggunakan tiga kolom pada desktop, dengan total stok
+  tetap menjadi informasi utama. Tinggi bagian ini terukur 110 px pada lebar
+  960 px dan 208 px pada mobile, dibanding 362 px pada audit mobile awal.
+- Nama lot dan catatan panjang tanpa spasi kini dapat membungkus di Riwayat
+  mobile, sementara angka gram tetap utuh. Kasus uji pada lebar 320 px
+  sebelumnya memperlebar dokumen menjadi 533 px; sesudah perbaikan tetap 320 px.
+- Peta memiliki label aksesibel; jumlah gram dalam daftar origin tidak terpisah
+  dari satuannya.
+- Screenshot landing diperbarui dari komponen Dashboard dan Rak terbaru,
+  menggunakan data contoh, dengan keterangan eksplisit. Aset baru:
+  `web/public/dashboard-preview.png` dan `web/public/rak-preview.png`.
+- Penjelasan warna membedakan eksperimen ΔE historis dari varian clay lebih
+  terang yang sekarang digunakan untuk teks transaksi keluar.
+
+Verifikasi:
+
+- Dashboard dan Riwayat diperiksa pada lebar 320, 390, dan 960 px tanpa
+  overflow horizontal, termasuk nama lot serta catatan panjang tanpa spasi.
+- Area navigasi terukur 44 px. Tautan Tambah lot membuka disclosure asli
+  dan memfokuskan bagian form tanpa tambahan JavaScript.
+- Kedua screenshot baru berhasil dimuat pada landing di browser.
+- 70 tes web, ESLint, TypeScript, dan build produksi berhasil.
+- Lighthouse mobile pada landing build produksi lokal: performa 96,
+  aksesibilitas 100, dan best practices 100. LCP 2,8 detik; masih ada saran
+  pengurangan JavaScript dan resource pemblokir render. Ini pengukuran lab
+  lokal, bukan jaminan performa deployment atau audit aksesibilitas lengkap.
+
+Pemeriksaan halaman privat menggunakan render komponen asli dengan data contoh,
+bukan sesi pemilik. Alur autentikasi dan transaksi end-to-end tidak diuji dalam
+tindak lanjut UI ini. Tidak ada perubahan database atau deployment.

@@ -96,7 +96,7 @@ export function StockBars({
         <h2 className="font-display text-base font-medium text-ink">
           Stok per lot
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <label className="flex items-center gap-2">
             <span className="font-body text-xs uppercase tracking-wide text-ink-faint">
               Urutkan

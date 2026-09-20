@@ -22,7 +22,7 @@ const MAX_ZOOM = 20;
 const ZOOM_STEP = 1.5;
 
 const buttonClass =
-  "rounded-full border border-line px-3 py-1.5 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber";
+  "inline-flex min-h-11 items-center justify-center rounded-full border border-line px-3 py-1.5 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber";
 
 function clampZoom(zoom: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));

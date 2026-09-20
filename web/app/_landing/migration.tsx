@@ -11,14 +11,21 @@ export function Migration() {
   return (
     <section className="mx-auto max-w-[1100px] px-6 py-24 sm:py-32">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-        <Reveal className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel">
-          <Image
-            src="/app-rak.png"
-            alt="Halaman Rak Coffee Ledger: baris lot dengan form catat transaksi langsung di baris"
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover object-top"
-          />
+        <Reveal>
+          <figure>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-line bg-panel">
+              <Image
+                src="/rak-preview.png"
+                alt="Rak Coffee Ledger: pencarian lot, filter status, dan form pencatatan pada lot yang dibuka"
+                fill
+                sizes="(min-width: 1100px) 506px, (min-width: 1024px) 50vw, 100vw"
+                className="object-cover object-top"
+              />
+            </div>
+            <figcaption className="mt-3 font-body text-xs text-ink-faint">
+              Rak saat ini, dengan data contoh.
+            </figcaption>
+          </figure>
         </Reveal>
         <Reveal delayMs={80} className="flex flex-col gap-5">
           <h2 className="font-display text-2xl font-medium text-ink sm:text-3xl">

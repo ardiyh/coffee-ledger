@@ -76,6 +76,29 @@ penyesuaian stok dilakukan dengan transaksi ADJUST baru.
 
 ## Alur UI
 
+### Verifikasi browser terisolasi
+
+Jalankan `npx playwright install chromium`, lalu `npm run test:ui` dari `web/`.
+Skrip menyalin aplikasi ke direktori sementara tanpa `.env*`, membuat kredensial
+fixture, dan mengganti adapter database hanya di salinan itu dengan PGlite.
+Schema serta trigger memakai migrasi asli; halaman, autentikasi, Server Actions,
+dan service ledger tetap memakai kode aplikasi. Tidak ada koneksi ke Neon.
+
+Tes mencakup login, transaksi berhasil/gagal, hadiah, stok habis, riwayat
+terfilter, keyboard skip-link, reduced motion, landing tanpa JavaScript,
+axe pada lima halaman, lebar 320–1280 px, serta pembesaran CSS 200%.
+Pembesaran CSS ditambah viewport 640 px adalah pemeriksaan reflow, bukan
+pengganti semua kombinasi browser/assistive technology atau sertifikasi WCAG.
+Laporan JSON disimpan di lokasi sementara yang dicetak skrip.
+
+Untuk memperbarui screenshot landing dengan data contoh, jalankan
+`UPDATE_UI_SCREENSHOTS=1 npm run test:ui`. Ini menulis ulang
+`public/dashboard-preview.png` dan `public/rak-preview.png`; bukti mobile
+disimpan bersama laporan sementara. Jangan menggunakan data pribadi untuk
+aset landing publik. CI menjalankan tes yang sama tanpa menulis ulang aset.
+
+### Perilaku aplikasi
+
 - Rak menampilkan lot aktif terlebih dahulu. Lot habis dapat dibuka untuk diedit
   atau diisi ulang. Default transaksi adalah Seduh untuk lot aktif dan Masuk untuk
   lot kosong.

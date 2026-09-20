@@ -25,7 +25,7 @@ export interface HistoryLotOption {
 }
 
 const inputClass =
-  "rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-sm text-ink focus:border-amber focus:outline-none";
+  "min-h-11 rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-base sm:text-sm text-ink focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
 
 /**
@@ -178,7 +178,7 @@ export function HistoryList({
         <button
           type="button"
           onClick={resetFilters}
-          className="rounded-full border border-line px-4 py-1.5 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-line px-4 py-1.5 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber"
         >
           Reset filter
         </button>
