@@ -1,7 +1,8 @@
 # Coffee Ledger UI/UX Follow-up Implementation Plan
 
 **Status pelaksanaan 20 September 2026:** implementasi dan verifikasi lokal
-dituntaskan; hasil aktual beserta batas pengujian ada di
+dituntaskan, rilis `c8ba35e` sudah tersedia di production dan smoke test publik
+lolos; hasil aktual beserta batas pengujian ada di
 [laporan rilis](../../ui-ux-release-2026-09-20.md). Checklist di bawah dipertahankan
 sebagai instruksi rencana asli, bukan pengganti laporan verifikasi/deployment.
 

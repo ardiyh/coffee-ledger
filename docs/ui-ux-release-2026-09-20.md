@@ -76,10 +76,25 @@ CI menjalankan `test:ui` tanpa menulis ulang screenshot.
 
 ## Status production
 
-Verifikasi lokal selesai; status deployment dan smoke test production akan
-dicatat setelah rilis selesai. Jangan menafsirkan hasil build lokal sebagai
-bukti deployment. Target yang diperiksa adalah branch `main` pada
-`ardiyh/coffee-ledger`, dengan domain `https://coffee-ledger-psi.vercel.app`.
+- Implementasi dirilis dari `main` pada commit
+  `c8ba35ee5395b9d810e63e0f20272048aecee8e4` di `ardiyh/coffee-ledger`.
+- Deployment Production Vercel `6555061402` berstatus **success** pada
+  20 September 2026, 23:33:46 WIB (16:33:46 UTC).
+- Domain aktif: [Coffee Ledger](https://coffee-ledger-psi.vercel.app).
+  Deployment immutable: [rilis c8ba35e](https://coffee-ledger-kgb179dna-mik-0848.vercel.app).
+- Smoke test domain production: `/` dan `/login` HTTP 200; `/dashboard`,
+  `/rak`, `/history`, dan `/history/csv` HTTP 307 menuju `/login` tanpa sesi.
+- SHA-256 kedua PNG publik sama dengan aset lokal rilis; ini memastikan
+  domain production sudah menyajikan screenshot baru, bukan deployment lama.
+- Axe pada landing/login production: nol violation; kedua halaman tidak
+  overflow pada 320, 390, dan 1280 px; tidak ada client page error terdeteksi.
+- [CI rilis](https://github.com/ardiyh/coffee-ledger/actions/runs/35523075556)
+  **success**: job Python (ruff + pytest) dan Web (lint, 198 tes, typecheck,
+  build, serta E2E browser terisolasi) lolos di runner Linux.
+
+Pengujian production bersifat read-only dan tanpa sesi pemilik. Transaksi,
+receipt, serta tampilan halaman privat diuji end-to-end di environment
+terisolasi; bukan klaim telah mencoba transaksi atau OAuth Google production.
 
 ## Catatan keamanan
 
