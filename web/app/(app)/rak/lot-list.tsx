@@ -81,12 +81,26 @@ export function LotList({
   const [lastReceipt, setLastReceipt] = useState<{ receipt: TransactionReceipt; lotName: string } | null>(null);
   // Set only by the hash effect below, to whichever lot id the URL hash
   // most recently pointed at (stays at that id afterwards -- see
-  // `focusedHashLotIdRef` below for how repeats are deduped, not by
+  // `focusedHashNonceRef` below for how repeats are deduped, not by
   // resetting this back to null). Deliberately separate from `openLotId`
   // -- that one also changes from ordinary row clicks, and this state
   // exists purely to gate the scroll+focus effect so it only fires for a
   // hash-driven open, not every time any row opens.
   const [hashLotId, setHashLotId] = useState<number | null>(null);
+  // Bumped every time applyHash() below genuinely *applies* a hash -- on
+  // mount or on a real `hashchange` event -- including when it targets the
+  // same lot id as before. `hashLotId` alone can't distinguish "a fresh
+  // navigation event that happens to repeat the same id" (e.g. the user
+  // clicking the same dashboard link twice) from "no new navigation
+  // happened at all" -- both leave `hashLotId` unchanged. The focus effect
+  // below dedupes against this nonce instead of the id itself (UX-03), so
+  // a genuine repeat navigation to an unchanged id still moves focus again,
+  // while the e42fe4e protection (an unrelated `lots`/`status` change must
+  // NOT re-steal focus) still holds -- that protection lives in
+  // `appliedInitialHashRef` below, which this doesn't touch: nothing here
+  // changes when applyHash() itself is allowed to run, only what happens
+  // once it does.
+  const [hashNonce, setHashNonce] = useState(0);
 
   function handleRecorded(receipt: TransactionReceipt, lotName: string) {
     setLastReceipt({ receipt, lotName });
@@ -208,6 +222,7 @@ export function LotList({
       if (!lot) return;
       setOpenLotId(id);
       setHashLotId(id);
+      setHashNonce((n) => n + 1);
       setStatus((current) => (matchesStatus(current, lot.stock) ? current : "all"));
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
@@ -219,17 +234,21 @@ export function LotList({
     return () => window.removeEventListener("hashchange", applyHash);
   }, [lots]);
 
-  // Remembers which `hashLotId` value has already had its scroll+focus, so
+  // Remembers which `hashNonce` value has already had its scroll+focus, so
   // a later run of the effect below for an *unrelated* dependency change --
   // `status`, e.g. the user working the Status dropdown right after landing
   // here -- doesn't redo it and yank focus back off whatever control the
-  // user is actually using. A ref rather than resetting `hashLotId` itself
-  // back to null: doing the reset would mean calling setState
-  // unconditionally inside this effect purely to prevent it from firing
-  // again, which is exactly the cascading-render anti-pattern
-  // react-hooks/set-state-in-effect flags -- comparing against a ref here
-  // achieves the same "only once per hash target" result without it.
-  const focusedHashLotIdRef = useRef<number | null>(null);
+  // user is actually using. Deliberately keyed on the nonce, not on
+  // `hashLotId` itself (UX-03): deduping by id would also (wrongly)
+  // swallow a second, genuine hashchange event that happens to target the
+  // same lot as the first one -- that repeat navigation must still move
+  // focus. A ref rather than resetting state back to null: doing the reset
+  // would mean calling setState unconditionally inside this effect purely
+  // to prevent it from firing again, which is exactly the cascading-render
+  // anti-pattern react-hooks/set-state-in-effect flags -- comparing
+  // against a ref here achieves the same "only once per navigation event"
+  // result without it.
+  const focusedHashNonceRef = useRef(0);
 
   // Scrolls to and focuses the hash target once it's actually on screen.
   // Split from the effect above so it re-runs after the state changes
@@ -239,13 +258,13 @@ export function LotList({
   // `scrollIntoView` is guarded because it isn't implemented in the jsdom
   // environment these tests run under.
   useEffect(() => {
-    if (hashLotId === null || focusedHashLotIdRef.current === hashLotId) return;
+    if (hashLotId === null || focusedHashNonceRef.current === hashNonce) return;
     const target = document.getElementById(`lot-${hashLotId}`);
     if (!target) return;
-    focusedHashLotIdRef.current = hashLotId;
+    focusedHashNonceRef.current = hashNonce;
     target.scrollIntoView?.({ block: "start" });
     target.focus();
-  }, [hashLotId, status]);
+  }, [hashLotId, hashNonce, status]);
 
   if (lots.length === 0) {
     return (
@@ -325,7 +344,20 @@ export function LotList({
 
       {matchedIds.size === 0 ? (
         <div className="rounded-lg border border-line bg-panel p-6 text-center">
-          <p className="font-body text-sm text-ink-dim">Tidak ada lot yang cocok</p>
+          <p className="font-body text-sm text-ink-dim">
+            {/*
+              UX-04: the open lot below stays on screen regardless of the
+              filter (see `visible` further down -- it protects the open
+              lot's draft from being yanked away). When that's the only
+              reason anything is still visible, saying just "Tidak ada lot
+              yang cocok" contradicts the row the user can see right below
+              this message. Acknowledge the exception instead of hiding it
+              or pretending the list is truly empty.
+            */}
+            {openLotId !== null && !matchedIds.has(openLotId)
+              ? "Tidak ada lot yang cocok. Lot yang sedang dibuka tetap ditampilkan."
+              : "Tidak ada lot yang cocok"}
+          </p>
           <button
             type="button"
             onClick={clearSearch}

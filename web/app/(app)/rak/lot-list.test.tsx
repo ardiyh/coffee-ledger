@@ -94,6 +94,36 @@ describe("LotList pencarian", () => {
   });
 });
 
+describe("LotList pencarian kosong dengan panel terbuka (UX-04)", () => {
+  it("pesan hasil kosong mengakui panel yang tetap ditampilkan sebagai pengecualian", async () => {
+    const user = userEvent.setup();
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    // Open lot 1's transaction panel first -- `visible` in lot-list.tsx
+    // deliberately keeps the open lot on screen regardless of the search
+    // filter (protects its draft), so once the query below matches
+    // nothing, lot 1 is still the one exception still visible.
+    const [openLot1] = screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" });
+    await user.click(openLot1);
+
+    await user.type(screen.getByLabelText("Cari"), "zzz-tidak-ada-lot-begini");
+
+    expect(screen.getByText("0 dari 3 lot")).toBeDefined();
+    // The plain "nothing matches" message would contradict lot 1 still
+    // being on screen -- it must acknowledge the exception instead.
+    expect(screen.queryByText("Tidak ada lot yang cocok", { exact: true })).toBeNull();
+    expect(screen.getByText(/Lot yang sedang dibuka tetap ditampilkan/)).toBeDefined();
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(false);
+
+    // Closing the exempted panel drops it back out, since it still doesn't
+    // match the filter -- the empty state should then read as a plain,
+    // unqualified "nothing matches".
+    await user.click(openLot1);
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(true);
+    expect(screen.getByText("Tidak ada lot yang cocok", { exact: true })).toBeDefined();
+  });
+});
+
 describe("LotList status", () => {
   it("default Aktif menyembunyikan lot yang stoknya habis", () => {
     render(<LotList lots={lots} suggestions={suggestions} />);
@@ -272,6 +302,47 @@ describe("LotList draft edit bertahan", () => {
     expect((catatLot2 as HTMLButtonElement).disabled).toBe(false);
     expect((editLot2 as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it("draft Edit lot pertama tetap utuh setelah kembali lewat tombol Catat, bukan tombol Edit", async () => {
+    const user = userEvent.setup();
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    // Capture every control up front, same reasoning as the tests above --
+    // lot 1's own header (with its "Catat" button) hides while its Edit
+    // panel is open.
+    const [editLot1] = screen.getAllByRole("button", { name: "Edit" });
+    const [catatLot1, catatLot2] = screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" });
+
+    // UX-01 repro: open lot 1's Edit, type an unsaved draft.
+    await user.click(editLot1);
+    const nameInput1 = screen.getByLabelText("Nama") as HTMLInputElement;
+    await user.clear(nameInput1);
+    await user.type(nameInput1, "Draft belum disimpan");
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+
+    // Open lot 2's transaction panel (not its Edit) -- closes lot 1.
+    await user.click(catatLot2);
+    const edit1 = document.getElementById("lot-edit-1") as HTMLElement;
+    expect(edit1.hidden).toBe(true);
+
+    // Come back to lot 1 via its *Catat* button (not Edit). This must show
+    // lot 1's transaction panel, not its Edit panel -- and, critically,
+    // must not have destroyed the Edit draft to get there.
+    await user.click(catatLot1);
+    const form1 = document.getElementById("lot-form-1") as HTMLElement;
+    expect(form1.hidden).toBe(false);
+    expect(edit1.hidden).toBe(true);
+    expect(document.body.contains(nameInput1)).toBe(true);
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+
+    // Opening Edit on lot 1 again must land on the exact same node with
+    // the draft intact -- not a freshly mounted EditLotForm reset to the
+    // saved name.
+    await user.click(editLot1);
+    expect(edit1.hidden).toBe(false);
+    expect(within(edit1).getByLabelText("Nama")).toBe(nameInput1);
+    expect(nameInput1.value).toBe("Draft belum disimpan");
+  });
 });
 
 describe("LotList request pending", () => {
@@ -434,5 +505,37 @@ describe("LotList navigasi lewat hash /rak#lot-<id>", () => {
     await user.selectOptions(statusSelect, "all");
 
     expect(document.activeElement).toBe(statusSelect);
+  });
+
+  it("navigasi hash berulang ke id yang sama tetap memindahkan fokus (UX-03)", async () => {
+    // UX-03 repro: initial hash focuses lot 1; user manually opens lot 2 and
+    // focuses Cari; a genuine *second* hashchange event landing on the same
+    // #lot-1 (e.g. clicking the same dashboard link twice) must move focus
+    // again, not be silently swallowed by the id-equality dedupe that
+    // e42fe4e introduced to stop *unrelated* refreshes from re-stealing
+    // focus.
+    const user = userEvent.setup();
+    window.location.hash = "#lot-1";
+    render(<LotList lots={lots} suggestions={suggestions} />);
+
+    const target1 = document.getElementById("lot-1") as HTMLElement;
+    expect(document.activeElement).toBe(target1);
+
+    const [, openLot2] = screen.getAllByRole("button", { name: "Catat untuk Gayo Natural" });
+    await user.click(openLot2);
+    const cariInput = screen.getByLabelText("Cari");
+    await user.click(cariInput);
+    expect(document.activeElement).toBe(cariInput);
+
+    // The first hash was already consumed (history.replaceState strips it),
+    // so re-navigating to the same target is a genuine hash transition, not
+    // a no-op -- exactly the "same dashboard link clicked twice" case.
+    await act(async () => {
+      window.location.hash = "#lot-1";
+      window.dispatchEvent(new Event("hashchange"));
+    });
+
+    expect((document.getElementById("lot-form-1") as HTMLElement).hidden).toBe(false);
+    expect(document.activeElement).toBe(target1);
   });
 });
