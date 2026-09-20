@@ -539,3 +539,48 @@ describe("LotList navigasi lewat hash /rak#lot-<id>", () => {
     expect(document.activeElement).toBe(target1);
   });
 });
+
+describe("LotList tombol Catat: teks singkat, accessible name lengkap (UX-02)", () => {
+  // UX-02 repro: a long lot name rendered as the button's own visible text
+  // (no width cap, no wrap allowed on the control group) blew out the
+  // document's scrollWidth past 320/390px viewports. The fix shortens the
+  // visible label to "Catat" and moves the full name into `aria-label` --
+  // jsdom can't measure real layout/overflow (see the audit notes), but it
+  // CAN confirm the accessible-name contract every existing
+  // `getByRole("button", { name: "Catat untuk <lot>" })` query across this
+  // suite and forms.test.tsx depends on is preserved byte-for-byte.
+  const longName = "El Salvador, Roasted by Ease Coffee (Chiba, Japan)";
+  const longNameLots: LotListItem[] = [
+    {
+      lotId: 1, name: longName, origin: "El Salvador", varietal: "Bourbon",
+      processMethod: "Washed", roastProfile: "Filter", roastDate: "2026-08-01",
+      notes: null, stock: 100,
+    },
+  ];
+
+  it("teks tombol yang tampak singkat, tetapi accessible name tetap 'Catat untuk <nama>'", () => {
+    render(<LotList lots={longNameLots} suggestions={suggestions} />);
+
+    // Existing-test-shape query: getByRole with `name` matches the
+    // *accessible* name (aria-label wins over visible text), so this must
+    // still resolve even though the button no longer visibly renders the
+    // full lot name.
+    const catatButton = screen.getByRole("button", { name: `Catat untuk ${longName}` });
+    expect(catatButton.textContent).toBe("Catat");
+    expect(catatButton.getAttribute("aria-label")).toBe(`Catat untuk ${longName}`);
+  });
+
+  it("grup kontrol (stok, Edit, Catat) boleh membungkus, bukan shrink-0 kaku", () => {
+    const { container } = render(<LotList lots={longNameLots} suggestions={suggestions} />);
+    const catatButton = screen.getByRole("button", { name: `Catat untuk ${longName}` });
+    const controlGroup = catatButton.closest("div.flex") as HTMLElement;
+
+    expect(controlGroup).not.toBeNull();
+    expect(controlGroup.className).toContain("flex-wrap");
+    expect(controlGroup.className).not.toContain("shrink-0");
+    // Sanity: this is still the row's own stock/Edit/Catat cluster, not some
+    // unrelated ancestor further up the tree.
+    expect(within(controlGroup).getByText("Edit")).toBeDefined();
+    void container;
+  });
+});

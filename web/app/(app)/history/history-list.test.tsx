@@ -247,3 +247,46 @@ describe("HistoryList wrap teks lokal dipertahankan", () => {
   });
 });
 
+describe("HistoryList filter Lot: lebar dibatasi, opsi tidak dipotong (UX-02)", () => {
+  // UX-02 repro: the Lot <select>'s rendered width follows its widest
+  // <option> text with no cap on the select or its wrapping <label>, so one
+  // long lot name could blow out the whole filter row past 320/390px
+  // viewports. jsdom doesn't compute real layout (can't assert the
+  // overflow itself is gone -- see the audit notes and the real-browser
+  // Playwright check done alongside this), but it CAN confirm the fix's
+  // actual mechanism: a max-width + min-w-0 on the label, and that no
+  // option text was truncated/lost from the DOM in the process (the
+  // closed box's width is constrained by CSS, not the option content).
+  const longName = "El Salvador, Roasted by Ease Coffee (Chiba, Japan)";
+  const longNameLots: HistoryLotOption[] = [
+    { id: 1, name: longName },
+    { id: 2, name: "Toraja Washed" },
+  ];
+
+  it("label Lot punya min-w-0 dan max-w, tanpa memotong teks opsi di DOM", () => {
+    const { container } = render(
+      <HistoryList transactions={txns} lots={longNameLots} initialLotId={null} />,
+    );
+
+    const select = screen.getByLabelText("Lot") as HTMLSelectElement;
+    const label = select.closest("label") as HTMLLabelElement;
+
+    expect(label.className).toContain("min-w-0");
+    expect(label.className).toMatch(/max-w-/);
+
+    const optionTexts = Array.from(select.querySelectorAll("option")).map((o) => o.textContent);
+    expect(optionTexts).toContain(longName);
+    void container;
+  });
+
+  it("memilih lot bernama panjang lewat dropdown tetap berfungsi", async () => {
+    const user = userEvent.setup();
+    render(<HistoryList transactions={txns} lots={longNameLots} initialLotId={null} />);
+
+    const select = screen.getByLabelText("Lot") as HTMLSelectElement;
+    await user.selectOptions(select, longName);
+
+    expect(select.value).toBe("1");
+  });
+});
+

@@ -256,7 +256,7 @@ export function LotRow({
             {daysSince(roastDate)} hari sejak roast
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <div className="flex flex-col items-end gap-0.5">
             <span className={labelClass}>Stok saat ini</span>
             {awaitingStockRefresh ? (
@@ -281,9 +281,10 @@ export function LotRow({
             disabled={controlsDisabled}
             aria-expanded={isOpen && panelView !== "edit"}
             aria-controls={`lot-form-${lotId}`}
+            aria-label={`Catat untuk ${name}`}
             className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
           >
-            {`Catat untuk ${name}`}
+            Catat
           </button>
         </div>
       </div>

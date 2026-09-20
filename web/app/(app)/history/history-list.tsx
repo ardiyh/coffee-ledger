@@ -121,14 +121,14 @@ export function HistoryList({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1">
+        <label className="flex min-w-0 max-w-[10rem] flex-col gap-1 sm:max-w-[14rem]">
           <span className={labelClass}>Lot</span>
           <select
             value={lotFilter ?? ""}
             onChange={(event) =>
               setLotFilter(event.target.value === "" ? null : Number(event.target.value))
             }
-            className={inputClass}
+            className={`${inputClass} w-full truncate`}
           >
             <option value="">Semua lot</option>
             {lots.map((l) => (
