@@ -8,6 +8,9 @@ import { ACTION_OPTIONS, type LotSuggestions } from "./types";
 
 const initialActionState: ActionState = {};
 
+/** Which panel is displayed while a row is open -- see `panelView` state below. */
+type PanelView = "transaction" | "edit";
+
 const inputClass =
   "min-h-11 rounded-md border border-line bg-panel-2 px-2 py-1.5 font-body text-base sm:text-sm text-ink placeholder:text-ink-faint focus:border-amber focus:outline-none";
 const labelClass = "font-body text-xs uppercase tracking-wide text-ink-faint";
@@ -63,25 +66,23 @@ export function LotRow({
   hidden, isOpen, otherPending, onOpenChange, onPendingChange, onRecorded,
 }: LotRowProps) {
   // Whether EditLotForm should stay mounted at all, independent of which
-  // panel is currently shown (see `viewingEdit` right below for that).
+  // panel is currently shown (see `panelView` right below for that).
   // Stays local to LotRow (not lifted to LotList) for the same reason
   // kind/grams/note do: it must survive this row being hidden and shown
   // again.
   const [editing, setEditing] = useState(false);
-  // Which panel to show *while this row is open* -- deliberately separate
-  // from `editing` above. `editing` only ever means "keep EditLotForm
-  // mounted so its draft survives" (see the big comment below); it must
-  // never flip to false just because the user switched which panel is on
-  // screen, or the switch itself would destroy the very draft it's meant
-  // to protect (that was UX-01: returning to a lot via its "Catat" button,
-  // rather than its "Edit" button, went through toggleOpen's open branch,
-  // which used to call setEditing(false) unconditionally -- unmounting
-  // EditLotForm even though this row wasn't visible at that moment).
-  // toggleOpen sets this to false (show the transaction panel); openForEdit
-  // sets it to true (show the edit panel); handleEditExit resets it to
-  // false so that cancelling/saving while still open reveals the
+  // Which panel to show *while this row is open* -- deliberately a separate
+  // piece of state from `editing` above, and deliberately a named union
+  // rather than a second boolean, so "mounted" and "displayed" can never be
+  // confused for each other again the way they were in UX-01: returning to
+  // a lot via its "Catat" button, rather than its "Edit" button, went
+  // through toggleOpen's open branch, which used to call setEditing(false)
+  // unconditionally -- unmounting EditLotForm even though this row wasn't
+  // visible at that moment. toggleOpen sets this to "transaction";
+  // openForEdit sets it to "edit"; handleEditExit resets it to
+  // "transaction" so that cancelling/saving while still open reveals the
   // transaction panel/header again instead of leaving both hidden.
-  const [viewingEdit, setViewingEdit] = useState(false);
+  const [panelView, setPanelView] = useState<PanelView>("transaction");
   const [kind, setKind] = useState<string | null>(null);
   const [grams, setGrams] = useState("");
   const [note, setNote] = useState("");
@@ -147,13 +148,13 @@ export function LotRow({
 
   // `editing` is deliberately never reset just because this row closes or
   // a different panel is shown -- EditLotForm stays mounted for as long as
-  // `editing` is true regardless of `isOpen` or `viewingEdit` (see the
+  // `editing` is true regardless of `isOpen` or `panelView` (see the
   // render below), so a stale `editing` left over from before this row was
   // closed/switched away is exactly the point: it's what keeps the draft
   // (and an in-flight save) alive while the user looks at another lot, or
   // at this same lot's transaction panel instead (UX-01). Only
   // `handleEditExit` (a real Batal/Simpan) ever sets it back to false.
-  // `viewingEdit` is the one that gates *visibility* of which panel shows
+  // `panelView` is the one that gates *visibility* of which panel shows
   // while `isOpen` -- toggleOpen and openForEdit below set it independently
   // of `editing`, precisely so switching panels can never destroy a draft.
 
@@ -167,7 +168,7 @@ export function LotRow({
   function handleEditExit() {
     setEditing(false);
     setEditPending(false);
-    setViewingEdit(false);
+    setPanelView("transaction");
   }
 
   // This row's own controls (Edit / "Catat untuk ...") are blocked
@@ -188,9 +189,9 @@ export function LotRow({
       // `editing`. If an edit draft was left mounted-but-hidden from
       // before this row was closed, forcing `editing` false here would
       // destroy it just to bring up the transaction panel (UX-01). Only
-      // `viewingEdit` (which panel is currently on screen) needs to
+      // `panelView` (which panel is currently on screen) needs to
       // change; `editing` (whether EditLotForm stays mounted) doesn't.
-      setViewingEdit(false);
+      setPanelView("transaction");
       onOpenChange(true);
     }
   }
@@ -198,7 +199,7 @@ export function LotRow({
   function openForEdit() {
     if (controlsDisabled) return;
     setEditing(true);
-    setViewingEdit(true);
+    setPanelView("edit");
     onOpenChange(true);
   }
 
@@ -206,7 +207,7 @@ export function LotRow({
   // filter (see lot-list.tsx), specifically so a transaction that empties
   // a lot mid-interaction doesn't yank it out from under the user. Explain
   // why it's still here instead of leaving it unexplained.
-  const justEmpty = isOpen && !viewingEdit && stock <= 0;
+  const justEmpty = isOpen && panelView !== "edit" && stock <= 0;
 
   // Drives both the select's default value and the note field's GIFT-only
   // label/helper below -- computed once so the two stay in sync with
@@ -227,12 +228,12 @@ export function LotRow({
         the draft state (kind/grams/note) already on this component.
       */}
       {editing ? (
-        // `viewingEdit` (not just `isOpen`) gates visibility here: this row
+        // `panelView` (not just `isOpen`) gates visibility here: this row
         // can be open with the transaction panel showing while an edit
         // draft still sits mounted-but-hidden underneath (see toggleOpen's
         // comment) -- that's the whole point of keeping `editing` and
-        // `viewingEdit` separate.
-        <div id={`lot-edit-${lotId}`} hidden={!isOpen || !viewingEdit}>
+        // `panelView` separate.
+        <div id={`lot-edit-${lotId}`} hidden={!isOpen || panelView !== "edit"}>
           <EditLotForm
             lotId={lotId}
             initial={{ name, origin, varietal, processMethod, roastProfile, roastDate, notes }}
@@ -244,7 +245,7 @@ export function LotRow({
         </div>
       ) : null}
 
-      <div hidden={isOpen && viewingEdit} className="flex flex-wrap items-start justify-between gap-4">
+      <div hidden={isOpen && panelView === "edit"} className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1 basis-40 [overflow-wrap:anywhere]">
           <p className="font-body text-base text-ink">{name}</p>
           <p className="mt-1 font-body text-xs text-ink-faint">
@@ -278,7 +279,7 @@ export function LotRow({
             type="button"
             onClick={toggleOpen}
             disabled={controlsDisabled}
-            aria-expanded={isOpen && !viewingEdit}
+            aria-expanded={isOpen && panelView !== "edit"}
             aria-controls={`lot-form-${lotId}`}
             className="inline-flex h-11 items-center justify-center rounded-full border border-line px-4 font-body text-xs text-ink-dim transition-colors hover:border-amber hover:text-amber disabled:opacity-50"
           >
@@ -287,7 +288,7 @@ export function LotRow({
         </div>
       </div>
 
-      <div id={`lot-form-${lotId}`} hidden={!isOpen || viewingEdit}>
+      <div id={`lot-form-${lotId}`} hidden={!isOpen || panelView === "edit"}>
         {justEmpty ? (
           <p className="mt-4 font-body text-xs text-clay-ink">
             Stok sudah habis. Panel ini tetap terbuka sampai kamu menutupnya.
