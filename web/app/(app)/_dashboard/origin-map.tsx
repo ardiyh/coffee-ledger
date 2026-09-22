@@ -70,6 +70,10 @@ function isPlaced(lot: MatchedLot): lot is PlacedLot {
  * pernah beda pendapat soal lot mana yang "kegambar". Lot yang origin-nya
  * gak dikenali gak dibuang diam-diam: mereka masuk daftar fallback sendiri
  * (nama, origin asli, gram), bukan cuma dihitung.
+ *
+ * Radius lebih besar + vignette halus (bukan bingkai polos kayak section
+ * lain) -- ini section pembuka dashboard sekarang, jadi sengaja dikasih
+ * sedikit lebih banyak "berat" visual daripada card di bawahnya.
  */
 export function OriginMap({ lots }: { lots: Lot[] }) {
   const matched: MatchedLot[] = lots.map((lot) => ({
@@ -130,7 +134,13 @@ export function OriginMap({ lots }: { lots: Lot[] }) {
   }
 
   return (
-    <section className="rounded-lg border border-line bg-panel p-6">
+    <section
+      className="rounded-2xl border border-line p-6"
+      style={{
+        background:
+          "radial-gradient(120% 90% at 25% 0%, rgba(200, 150, 90, 0.07), transparent 60%), var(--panel)",
+      }}
+    >
       <h2 className="mb-2 font-display text-base font-medium text-ink">
         Peta lot aktif
       </h2>

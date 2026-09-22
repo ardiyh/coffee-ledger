@@ -7,6 +7,11 @@ import { formatGrams } from "@/lib/format";
  * ketiganya berbobot sama walau total lot jarang jadi acuan keputusan, dan
  * di layar sempit itu menghabiskan ruang sebelum grafik stok mulai kelihatan.
  * Selalu tampil, termasuk saat semuanya nol -- itu keadaan yang sah, bukan error.
+ *
+ * Lepas dari bingkai kartu (border/panel) sengaja: angka besar sudah
+ * membawa hierarki sendiri lewat ukuran font, jadi bingkai di sini cuma
+ * kebisingan berulang. Garis bawah tunggal di seluruh grup tetap menjaga
+ * ketiganya kebaca sebagai satu kelompok tanpa bingkai per-angka.
  */
 export function StatTiles({
   total,
@@ -18,8 +23,8 @@ export function StatTiles({
   all: number;
 }) {
   return (
-    <section className="grid grid-cols-2 gap-4 sm:grid-cols-[2fr_1fr_1fr]">
-      <div className="col-span-2 min-w-0 rounded-lg border border-line bg-panel p-6 sm:col-span-1">
+    <section className="grid grid-cols-2 gap-4 border-b border-line pb-6 sm:grid-cols-[2fr_1fr_1fr] sm:gap-6">
+      <div className="col-span-2 min-w-0 sm:col-span-1">
         <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
           Total stok
         </p>
@@ -35,7 +40,7 @@ export function StatTiles({
 
 function SecondaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 flex-col justify-center rounded-lg border border-line bg-panel p-4 sm:p-6">
+    <div className="flex min-w-0 flex-col justify-center">
       <p className="font-mono text-xs uppercase tracking-wide text-ink-faint">
         {label}
       </p>

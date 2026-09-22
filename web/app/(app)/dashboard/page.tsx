@@ -38,7 +38,7 @@ export default async function DashboardPage() {
           href="/rak"
           className="rounded-full border border-line px-4 py-2 font-body text-sm text-ink transition-colors hover:border-amber hover:text-amber"
         >
-          Catat di Rak
+          Ke Rak
         </Link>
       </div>
 
@@ -50,6 +50,13 @@ export default async function DashboardPage() {
 
       {activeLots.length > 0 ? (
         <>
+          <OriginMap
+            lots={activeLots.map((l) => ({
+              name: l.lot.name,
+              stock: l.stock,
+              origin: l.lot.origin,
+            }))}
+          />
           <StockBars
             rows={activeLots.map((l) => ({
               id: l.lot.id,
@@ -58,13 +65,6 @@ export default async function DashboardPage() {
               roastDate: l.lot.roastDate,
               processMethod: l.lot.processMethod,
               roastProfile: l.lot.roastProfile,
-            }))}
-          />
-          <OriginMap
-            lots={activeLots.map((l) => ({
-              name: l.lot.name,
-              stock: l.stock,
-              origin: l.lot.origin,
             }))}
           />
         </>
